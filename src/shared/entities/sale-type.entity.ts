@@ -12,6 +12,9 @@ export class SaleType {
   @OneToMany(() => Sale, (sale) => sale.type)
   sales: Sale[];
 
+  @Column({ name: 'is_active', default: true })
+  isActive: boolean;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

@@ -9,6 +9,7 @@ import { CreateSaleTypeRequest } from '@modules/sale/dto/create-sale-type-reques
 import { GetStatsFilter } from '@modules/sale/dto/get-stats-filter.dto';
 import { User } from '@shared/entities/user.entity';
 import { EventGateway } from '@shared/modules/ws/event.gateway';
+import { UpdateSaleTypeRequest } from '@modules/sale/dto/update-sale-type-request.dto';
 
 @Injectable()
 export class SaleService {
@@ -109,5 +110,13 @@ export class SaleService {
         createdAt: 'desc',
       },
     });
+  }
+
+  async updateType(id: string, data: UpdateSaleTypeRequest) {
+    await this.saleTypeRepo.update(id, data);
+
+    return {
+      message: 'Sotuv turi yangilandi',
+    };
   }
 }
