@@ -28,7 +28,7 @@ export class SaleController {
     return this.saleService.getTypes();
   }
 
-  @Get('types-options')
+  @Get('type-options')
   getTypesForOptions() {
     return this.saleService.getTypes();
   }
