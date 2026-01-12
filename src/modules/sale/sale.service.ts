@@ -112,6 +112,17 @@ export class SaleService {
     });
   }
 
+  getTypesForOption() {
+    return this.saleTypeRepo.find({
+      order: {
+        createdAt: 'desc',
+      },
+      where: {
+        isActive: true,
+      },
+    });
+  }
+
   async updateType(id: string, data: UpdateSaleTypeRequest) {
     await this.saleTypeRepo.update(id, data);
 

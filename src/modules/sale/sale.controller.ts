@@ -28,6 +28,11 @@ export class SaleController {
     return this.saleService.getTypes();
   }
 
+  @Get('types-options')
+  getTypesForOptions() {
+    return this.saleService.getTypes();
+  }
+
   @Post('create-type')
   createSaleType(@Body() body: CreateSaleTypeRequest) {
     return this.saleService.createSaleType(body);
