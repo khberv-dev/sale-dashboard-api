@@ -112,7 +112,7 @@ export class SaleService {
     });
   }
 
-  getTypesForOption() {
+  getTypeOptions() {
     return this.saleTypeRepo.find({
       order: {
         createdAt: 'desc',
