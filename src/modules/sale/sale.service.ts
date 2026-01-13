@@ -53,7 +53,7 @@ export class SaleService {
     };
   }
 
-  private getManagerSales(startDate: Date, endDate: Date): Promise<any[]> {
+  private getManagersResult(startDate: Date, endDate: Date): Promise<any[]> {
     return this.saleRepo.query(
       `SELECT m.first_name as "firstName", m.last_name as "lastName", m.avatar, SUM(s.amount) as "sale"
        FROM sales s
@@ -66,12 +66,61 @@ export class SaleService {
     );
   }
 
+  private async getDailyStat() {
+    const startDate = dayjs().startOf('month').format('YYYY-MM-DD');
+    const endDate = dayjs().endOf('month').format('YYYY-MM-DD');
+
+    const data: any[] = await this.saleRepo.query(
+      `WITH date_range AS (SELECT generate_series(
+                                    $1::date,
+                                    $2::date,
+                                    INTERVAL '1 day'
+                                  ) ::date AS day)
+      SELECT COALESCE(SUM(s.amount), 0) AS sale
+      FROM date_range d
+             LEFT JOIN sales s
+                       ON s.sale_at::date = d.day
+      GROUP BY d.day
+      ORDER BY d.day;`,
+      [startDate, endDate],
+    );
+
+    return data.map((x) => Number(x.sale));
+  }
+
+  private async getMonthlyStat() {
+    const startDate = dayjs().subtract(6, 'month').format('YYYY-MM-DD');
+    const endDate = dayjs().format('YYYY-MM-DD');
+
+    const data: any[] = await this.saleRepo.query(
+      `WITH month_range AS (SELECT generate_series(
+                                     date_trunc('month', $1::date),
+                                     date_trunc('month', $2::date),
+                                     INTERVAL '1 month'
+                                   ) ::date AS month
+         )
+      SELECT m.month,
+             COALESCE(SUM(s.amount), 0) AS sale
+      FROM month_range m
+             LEFT JOIN sales s
+                       ON s.sale_at >= m.month
+                         AND s.sale_at < m.month + INTERVAL '1 month'
+      GROUP BY m.month
+      ORDER BY m.month;`,
+      [startDate, endDate],
+    );
+
+    return data.map((x) => Number(x.sale));
+  }
+
   async getStats(filter: GetStatsFilter) {
     const now = dayjs();
     const startOfDay = now.startOf('day').toDate();
     const endOfDay = now.endOf('day').toDate();
-    const dailyResult: any[] = await this.getManagerSales(startOfDay, endOfDay);
-    const totalResult: any[] = await this.getManagerSales(filter.startDate, filter.endDate);
+    const dailyResult: any[] = await this.getManagersResult(startOfDay, endOfDay);
+    const totalResult: any[] = await this.getManagersResult(filter.startDate, filter.endDate);
+    const dailyStats = await this.getDailyStat();
+    const monthlyStats = await this.getMonthlyStat();
 
     let dailyAmount = 0;
     let totalAmount = 0;
@@ -81,6 +130,8 @@ export class SaleService {
 
     return {
       daily: dailyResult,
+      dailyStats,
+      monthlyStats,
       dailyAmount,
       total: totalResult,
       totalAmount,
