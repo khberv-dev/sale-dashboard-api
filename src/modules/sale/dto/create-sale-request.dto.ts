@@ -9,7 +9,7 @@ export class CreateSaleRequest {
 
   @IsOptional()
   @IsString()
-  contractId: string;
+  contractNumber: string;
 
   @IsString()
   date: string;

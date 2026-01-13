@@ -50,7 +50,7 @@ export class SaleService {
     const newSale = await this.saleRepo.save({
       manager: { id: managerId },
       amount: data.amount,
-      contractNumber: data.contractId,
+      contractNumber: data.contractNumber,
       type: { id: data.type },
       saleAt: saleDateTime.toDate(),
     });
