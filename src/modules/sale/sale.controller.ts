@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, Req } from '@nestjs/common';
 import { SaleService } from '@modules/sale/sale.service';
 import { CreateSaleRequest } from '@modules/sale/dto/create-sale-request.dto';
 import { DefaultAuthGuard } from '@common/guards/default-auth.guard';
@@ -39,8 +39,8 @@ export class SaleController {
   }
 
   @Get('all')
-  getSales() {
-    return this.saleService.getSales();
+  getSales(@Query('page', ParseIntPipe) page: number) {
+    return this.saleService.getSales(page);
   }
 
   @Put('update-type/:saleTypeId')

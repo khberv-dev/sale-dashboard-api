@@ -166,8 +166,10 @@ export class SaleService {
     };
   }
 
-  getSales() {
-    return this.saleRepo
+  async getSales(page: number) {
+    const pageSize = 15;
+
+    const data = await this.saleRepo
       .createQueryBuilder('s')
       .leftJoin(User, 'm', 'm.id=s.manager_id')
       .leftJoin(SaleType, 'st', 'st.id=s.type_id')
@@ -181,7 +183,18 @@ export class SaleService {
         'st.name "saleType"',
       ])
       .orderBy('s.created_at', 'DESC')
+      .offset((page - 1) * pageSize)
+      .limit(pageSize)
       .getRawMany();
+
+    const count = await this.saleRepo.count();
+
+    return {
+      data,
+      page,
+      count,
+      pageSize,
+    };
   }
 
   getTypes() {
