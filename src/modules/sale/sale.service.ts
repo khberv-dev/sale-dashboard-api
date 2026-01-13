@@ -19,6 +19,31 @@ export class SaleService {
     private readonly eventGateway: EventGateway,
   ) {}
 
+  private calculateSalary(saleAmount: number) {
+    const fixedAmount = 2_000_000;
+    let bonus = 0;
+
+    switch (true) {
+      case saleAmount > 10_000_000:
+        bonus = saleAmount * 0.03;
+        break;
+      case saleAmount > 20_000_000:
+        bonus = saleAmount * 0.05;
+        break;
+      case saleAmount > 30_000_000:
+        bonus = saleAmount * 0.07;
+        break;
+      case saleAmount > 40_000_000:
+        bonus = saleAmount * 0.09;
+        break;
+      case saleAmount > 50_000_000:
+        bonus = saleAmount * 0.1;
+        break;
+    }
+
+    return fixedAmount + bonus;
+  }
+
   async createSale(managerId: string, data: CreateSaleRequest) {
     const saleDateTime = dayjs(data.date + ' ' + data.time, 'YYYY-MM-DD HH:mm');
 
@@ -53,8 +78,8 @@ export class SaleService {
     };
   }
 
-  private getManagersResult(startDate: Date, endDate: Date): Promise<any[]> {
-    return this.saleRepo.query(
+  private async getManagersResult(startDate: Date, endDate: Date): Promise<any[]> {
+    const result = await this.saleRepo.query(
       `SELECT m.first_name as "firstName", m.last_name as "lastName", m.avatar, SUM(s.amount) as "sale"
        FROM sales s
               LEFT JOIN users m
@@ -64,6 +89,8 @@ export class SaleService {
        GROUP BY m.username, m.first_name, m.last_name, m.avatar`,
       [startDate, endDate],
     );
+
+    return result.map((manager) => ({ ...manager, salary: this.calculateSalary(manager.sale) }));
   }
 
   private async getDailyStat() {
