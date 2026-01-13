@@ -168,14 +168,15 @@ export class SaleService {
   getSales() {
     return this.saleRepo
       .createQueryBuilder('s')
-      .leftJoin(User, 'u', 'u.id=s.manager_id')
+      .leftJoin(User, 'm', 'm.id=s.manager_id')
       .leftJoin(SaleType, 'st', 'st.id=s.type_id')
       .select([
         's."id"',
         's."amount"',
         's.sale_at "saleAt"',
-        'u.first_name "firstName"',
-        'u.last_name "lastName"',
+        'm.first_name "firstName"',
+        'm.last_name "lastName"',
+        'm."avatar"',
         'st.name "saleType"',
       ])
       .orderBy('s.created_at', 'DESC')
