@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req } from '@nestjs/common';
 import { SaleService } from '@modules/sale/sale.service';
 import { CreateSaleRequest } from '@modules/sale/dto/create-sale-request.dto';
 import { DefaultAuthGuard } from '@common/guards/default-auth.guard';
@@ -46,5 +46,10 @@ export class SaleController {
   @Put('update-type/:saleTypeId')
   updateType(@Param('saleTypeId') saleTypeId: string, @Body() body: UpdateSaleTypeRequest) {
     return this.saleService.updateType(saleTypeId, body);
+  }
+
+  @Delete(':saleId')
+  deleteSale(@Param('saleId') saleId: string) {
+    return this.saleService.deleteSale(saleId);
   }
 }

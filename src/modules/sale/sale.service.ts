@@ -181,4 +181,12 @@ export class SaleService {
       message: 'Sotuv turi yangilandi',
     };
   }
+
+  async deleteSale(id: string) {
+    await this.saleRepo.delete(id);
+
+    return {
+      message: "Sotuv o'chirildi",
+    };
+  }
 }
