@@ -27,10 +27,17 @@ export class BotService implements OnModuleInit {
     });
   }
 
-  notifySale(firstName: string, lastName: string, amount: number) {
+  notifySale(firstName: string, lastName: string, amount: number, dailyAmount: number, monthlyAmount: number) {
     const fullName = firstName + ' ' + (lastName ? lastName : '');
     const messageText =
-      '<b>Sotuv 🚀</>\n\n' + `<b>👤 Sotuvchi: </b>${fullName}\n` + `<b>💸 Summa: </b>${formatNumber(amount)}`;
+      '<b>💵 SOTUV ❗️❗️❗️</>\n' +
+      '━━━━━━━━━━━━━━' +
+      `👤${fullName}\n` +
+      `💰${formatNumber(amount)} so'm` +
+      `📈<b>Bugun:</b> ${formatNumber(dailyAmount)}` +
+      `🗓<b>Oy:</b> ${formatNumber(dailyAmount)}` +
+      '━━━━━━━━━━━━━━' +
+      '📌 Keyingisi kim?';
 
     return this.bot.api.sendMessage(this.groupId, messageText, {
       parse_mode: 'HTML',

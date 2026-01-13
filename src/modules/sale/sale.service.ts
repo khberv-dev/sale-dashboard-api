@@ -64,8 +64,18 @@ export class SaleService {
       .where('s.id=:saleId', { saleId: newSale.id })
       .getRawOne();
 
+    const startDate = dayjs().startOf('month').toDate();
+    const endDate = dayjs().endOf('month').toDate();
+    const stats = await this.getStats({ startDate, endDate });
+
     this.eventGateway.broadcast('new-sale', newSaleData);
-    this.botService.notifySale(newSaleData.firstName, newSaleData.lastName, newSaleData.amount);
+    this.botService.notifySale(
+      newSaleData.firstName,
+      newSaleData.lastName,
+      newSaleData.amount,
+      stats.dailyAmount,
+      stats.totalAmount,
+    );
 
     return {
       message: 'Sotuv tasdiqlandi',
