@@ -10,6 +10,7 @@ import { GetStatsFilter } from '@modules/sale/dto/get-stats-filter.dto';
 import { User } from '@shared/entities/user.entity';
 import { EventGateway } from '@shared/modules/ws/event.gateway';
 import { UpdateSaleTypeRequest } from '@modules/sale/dto/update-sale-type-request.dto';
+import { BotService } from '@shared/modules/notify/bot.service';
 
 @Injectable()
 export class SaleService {
@@ -17,6 +18,7 @@ export class SaleService {
     @InjectRepository(Sale) private readonly saleRepo: Repository<Sale>,
     @InjectRepository(SaleType) private readonly saleTypeRepo: Repository<SaleType>,
     private readonly eventGateway: EventGateway,
+    private readonly botService: BotService,
   ) {}
 
   private calculateSalary(saleAmount: number) {
@@ -63,6 +65,7 @@ export class SaleService {
       .getRawOne();
 
     this.eventGateway.broadcast('new-sale', newSaleData);
+    this.botService.notifySale(newSaleData.firstName, newSaleData.lastName, newSaleData.amount);
 
     return {
       message: 'Sotuv tasdiqlandi',

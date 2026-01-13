@@ -7,6 +7,7 @@ import { AuthModule } from '@modules/auth/auth.module';
 import { UserModule } from '@modules/user/user.module';
 import { SaleModule } from '@modules/sale/sale.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { NotifyModule } from '@shared/modules/notify/notify.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     AuthModule,
     UserModule,
     SaleModule,
+    NotifyModule,
   ],
   controllers: [AppController],
 })
