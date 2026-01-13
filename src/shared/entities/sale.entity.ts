@@ -21,6 +21,9 @@ export class Sale {
   @Column({ name: 'sale_at' })
   saleAt: Date;
 
+  @Column({ name: 'contract_number', nullable: true })
+  contractNumber: string;
+
   @ManyToOne(() => User, (manager) => manager.sales)
   @JoinColumn({ name: 'manager_id' })
   manager: User;

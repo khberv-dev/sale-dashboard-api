@@ -1,4 +1,4 @@
-import { IsInt, IsString } from 'class-validator';
+import { IsInt, IsOptional, IsString } from 'class-validator';
 
 export class CreateSaleRequest {
   @IsInt()
@@ -6,6 +6,10 @@ export class CreateSaleRequest {
 
   @IsString()
   type: string;
+
+  @IsOptional()
+  @IsString()
+  contractId: string;
 
   @IsString()
   date: string;
