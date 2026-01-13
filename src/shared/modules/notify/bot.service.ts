@@ -17,9 +17,13 @@ export class BotService implements OnModuleInit {
     this.bot = new Bot(this.configService.getOrThrow<string>('BOT_TOKEN'));
 
     this.bot.on('message', async (context) => {
-      const message = context.message;
+      try {
+        const message = context.message;
 
-      await this.bot.api.forwardMessage('-5010331073', this.groupId, message.message_id);
+        await this.bot.api.forwardMessage('-5010331073', this.groupId, message.message_id);
+      } catch (e) {
+        console.log('Unable to forward');
+      }
     });
 
     this.bot.start({
