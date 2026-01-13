@@ -37,10 +37,10 @@ export class BotService implements OnModuleInit {
       '<b>💵 SOTUV ❗️❗️❗️</>\n' +
       '━━━━━━━━━━━━━━' +
       `👤${fullName}\n` +
-      `💰${formatNumber(amount)} so'm` +
-      `📈<b>Bugun:</b> ${formatNumber(dailyAmount)}` +
-      `🗓<b>Oy:</b> ${formatNumber(dailyAmount)}` +
-      '━━━━━━━━━━━━━━' +
+      `💰${formatNumber(amount)} so'm\n` +
+      `📈<b>Bugun:</b> ${formatNumber(dailyAmount)}\n` +
+      `🗓<b>Oy:</b> ${formatNumber(dailyAmount)}\n` +
+      '━━━━━━━━━━━━━━\n' +
       '📌 Keyingisi kim?';
 
     return this.bot.api.sendMessage(this.groupId, messageText, {
