@@ -6,9 +6,10 @@ import { Sale } from '@shared/entities/sale.entity';
 import { SaleType } from '@shared/entities/sale-type.entity';
 import { WsModule } from '@shared/modules/ws/ws.module';
 import { NotifyModule } from '@shared/modules/notify/notify.module';
+import { User } from '@shared/entities/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Sale, SaleType]), WsModule, NotifyModule],
+  imports: [TypeOrmModule.forFeature([Sale, SaleType, User]), WsModule, NotifyModule],
   controllers: [SaleController],
   providers: [SaleService],
 })

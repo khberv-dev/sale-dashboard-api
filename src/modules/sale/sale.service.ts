@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateSaleRequest } from '@modules/sale/dto/create-sale-request.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,15 +11,31 @@ import { User } from '@shared/entities/user.entity';
 import { EventGateway } from '@shared/modules/ws/event.gateway';
 import { UpdateSaleTypeRequest } from '@modules/sale/dto/update-sale-type-request.dto';
 import { BotService } from '@shared/modules/notify/bot.service';
+import { UserRole } from '@shared/enum/user-role.enum';
 
 @Injectable()
 export class SaleService {
   constructor(
     @InjectRepository(Sale) private readonly saleRepo: Repository<Sale>,
     @InjectRepository(SaleType) private readonly saleTypeRepo: Repository<SaleType>,
+    @InjectRepository(User) private readonly userRepo: Repository<User>,
     private readonly eventGateway: EventGateway,
     private readonly botService: BotService,
   ) {}
+
+  private async getAdminPlan() {
+    const admin = await this.userRepo.findOne({
+      where: {
+        role: UserRole.ADMIN,
+      },
+    });
+
+    if (!admin) {
+      throw new BadRequestException('Admin not found');
+    }
+
+    return admin.plan;
+  }
 
   private calculateSalary(saleAmount: number) {
     const fixedAmount = 2_000_000;
@@ -162,6 +178,7 @@ export class SaleService {
     const totalResult: any[] = await this.getManagersResult(filter.startDate, filter.endDate);
     const dailyStats = await this.getDailyStat();
     const monthlyStats = await this.getMonthlyStat();
+    const monthPlan = await this.getAdminPlan();
 
     let dailyAmount = 0;
     let totalAmount = 0;
@@ -176,6 +193,7 @@ export class SaleService {
       dailyAmount,
       total: totalResult,
       totalAmount,
+      monthPlan,
     };
   }
 
