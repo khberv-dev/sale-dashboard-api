@@ -73,4 +73,28 @@ export class UserService {
       message: 'Profil yangilandi',
     };
   }
+
+  async setMonthPlan(userId: string, plan: number) {
+    await this.userRepo.update(userId, {
+      plan,
+    });
+
+    return {
+      message: "Plan o'zgartirildi",
+    };
+  }
+
+  async getMonthPlan(userId: string) {
+    const user = await this.userRepo.findOne({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException();
+    }
+
+    return user.plan;
+  }
 }

@@ -22,6 +22,9 @@ export class User {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
+  @Column({ type: 'bigint', default: 0 })
+  plan: number;
+
   @Column({ nullable: true })
   avatar: string;
 
