@@ -37,25 +37,25 @@ export class SaleService {
     return admin.plan;
   }
 
-  private calculateSalary(saleAmount: number) {
+  calculateSalary(saleAmount: number) {
     const fixedAmount = 2_000_000;
     let bonus = 0;
 
     switch (true) {
-      case saleAmount > 10_000_000:
-        bonus = saleAmount * 0.03;
-        break;
-      case saleAmount > 20_000_000:
-        bonus = saleAmount * 0.05;
-        break;
-      case saleAmount > 30_000_000:
-        bonus = saleAmount * 0.07;
+      case saleAmount > 50_000_000:
+        bonus = saleAmount * 0.1;
         break;
       case saleAmount > 40_000_000:
         bonus = saleAmount * 0.09;
         break;
-      case saleAmount > 50_000_000:
-        bonus = saleAmount * 0.1;
+      case saleAmount > 30_000_000:
+        bonus = saleAmount * 0.07;
+        break;
+      case saleAmount > 20_000_000:
+        bonus = saleAmount * 0.05;
+        break;
+      case saleAmount > 10_000_000:
+        bonus = saleAmount * 0.03;
         break;
     }
 
