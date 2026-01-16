@@ -35,8 +35,8 @@ export class BotService implements OnModuleInit {
     const fullName = firstName + ' ' + (lastName ? lastName : '');
     const messageText =
       '<b>💵 SOTUV ❗️❗️❗️</>\n' +
-      '━━━━━━━━━━━━━━' +
-      `👤${fullName}\n` +
+      '━━━━━━━━━━━━━━\n' +
+      `👤<b>${fullName}</b>\n` +
       `💰${formatNumber(amount)} so'm\n` +
       `📈<b>Bugun:</b> ${formatNumber(dailyAmount)}\n` +
       `🗓<b>Oy:</b> ${formatNumber(dailyAmount)}\n` +

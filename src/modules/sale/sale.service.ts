@@ -89,8 +89,8 @@ export class SaleService {
       newSaleData.firstName,
       newSaleData.lastName,
       newSaleData.amount,
-      stats.dailyAmount,
-      stats.totalAmount,
+      stats.dailyAmount + data.amount,
+      stats.totalAmount + data.amount,
     );
 
     return {
