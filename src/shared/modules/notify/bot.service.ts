@@ -39,7 +39,7 @@ export class BotService implements OnModuleInit {
       `👤<b>${fullName}</b>\n` +
       `💰${formatNumber(amount)} so'm\n` +
       `📈<b>Bugun:</b> ${formatNumber(dailyAmount)}\n` +
-      `🗓<b>Oy:</b> ${formatNumber(dailyAmount)}\n` +
+      `🗓<b>Oy:</b> ${formatNumber(monthlyAmount)}\n` +
       '━━━━━━━━━━━━━━\n' +
       '📌 Keyingisi kim?';
 
