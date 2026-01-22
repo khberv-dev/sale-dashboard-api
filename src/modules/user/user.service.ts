@@ -3,7 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '@shared/entities/user.entity';
 import { UpdateUserRequest } from '@modules/user/dto/update-user-request.dto';
-import { hashPassword } from '@/utils/hash.util';
+import { checkPassword, hashPassword } from '@/utils/hash.util';
+import { UpdatePasswordRequest } from '@modules/user/dto/update-password-request.dto';
 
 @Injectable()
 export class UserService {
@@ -96,5 +97,34 @@ export class UserService {
     }
 
     return user.plan;
+  }
+
+  async updatePassword(userId: string, data: UpdatePasswordRequest) {
+    const user = await this.userRepo.findOne({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    const isValidPassword = await checkPassword(data.oldPassword, user.password);
+
+    if (!isValidPassword) {
+      throw new BadRequestException('Eski parol xato');
+    }
+
+    if (data.password !== data.passwordConfirm) {
+      throw new BadRequestException('Parol tasdiqlanmagan');
+    }
+
+    user.password = await hashPassword(data.password);
+    await this.userRepo.save(user);
+
+    return {
+      message: 'Parol yangilandi',
+    };
   }
 }
