@@ -8,6 +8,8 @@ import { UserModule } from '@modules/user/user.module';
 import { SaleModule } from '@modules/sale/sale.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { NotifyModule } from '@shared/modules/notify/notify.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { ContractModule } from '@modules/contract/contract.module';
 
 @Module({
   imports: [
@@ -19,10 +21,15 @@ import { NotifyModule } from '@shared/modules/notify/notify.module';
       rootPath: 'uploads',
       serveRoot: '/public',
     }),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 360000,
+    }),
     AuthModule,
     UserModule,
     SaleModule,
     NotifyModule,
+    ContractModule,
   ],
   controllers: [AppController],
 })
