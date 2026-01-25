@@ -76,7 +76,7 @@ export class SaleService {
     const newSaleData: any = await this.saleRepo
       .createQueryBuilder('s')
       .leftJoin(User, 'm', 'm.id=s.manager_id')
-      .leftJoin(SaleType, 'st', 'st.id=s.sale_type_id')
+      .leftJoin(SaleType, 'st', 'st.id=s.type_id')
       .select([
         's."id"',
         's."amount"',
