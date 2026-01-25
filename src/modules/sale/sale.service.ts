@@ -76,7 +76,15 @@ export class SaleService {
     const newSaleData: any = await this.saleRepo
       .createQueryBuilder('s')
       .leftJoin(User, 'm', 'm.id=s.manager_id')
-      .select(['s."id"', 's."amount"', 'm."first_name" "firstName"', 'm."last_name" "lastName"', 'm."avatar"'])
+      .leftJoin(SaleType, 'st', 'st.id=s.sale_type_id')
+      .select([
+        's."id"',
+        's."amount"',
+        'm."first_name" "firstName"',
+        'm."last_name" "lastName"',
+        'm."avatar"',
+        'st.name type',
+      ])
       .where('s.id=:saleId', { saleId: newSale.id })
       .getRawOne();
 
@@ -91,6 +99,7 @@ export class SaleService {
       newSaleData.amount,
       stats.dailyAmount,
       stats.totalAmount,
+      newSaleData.type,
     );
 
     return {

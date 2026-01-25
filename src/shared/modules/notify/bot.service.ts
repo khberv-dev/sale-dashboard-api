@@ -31,13 +31,21 @@ export class BotService implements OnModuleInit {
     });
   }
 
-  notifySale(firstName: string, lastName: string, amount: number, dailyAmount: number, monthlyAmount: number) {
+  notifySale(
+    firstName: string,
+    lastName: string,
+    amount: number,
+    dailyAmount: number,
+    monthlyAmount: number,
+    type: string,
+  ) {
     const fullName = firstName + ' ' + (lastName ? lastName : '');
     const messageText =
       '<b>💵 SOTUV ❗️❗️❗️</>\n' +
       '━━━━━━━━━━━━━━\n' +
       `👤<b>${fullName}</b>\n` +
       `💰${formatNumber(amount)} so'm\n` +
+      `📃 <b>${type}</b>\n` +
       `📈<b>Bugun:</b> ${formatNumber(dailyAmount)}\n` +
       `🗓<b>Oy:</b> ${formatNumber(monthlyAmount)}\n` +
       '━━━━━━━━━━━━━━\n' +
