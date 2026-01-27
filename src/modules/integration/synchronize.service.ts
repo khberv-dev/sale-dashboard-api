@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CrmProfile } from '@shared/entities/crm-profiles.entity';
 import { Repository } from 'typeorm';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { AmocrmService } from '@modules/integration/amocrm.service';
 
 @Injectable()
@@ -12,7 +12,7 @@ export class SynchronizeService {
     private readonly amoCrmService: AmocrmService,
   ) {}
 
-  @Cron('*/10 * * * *')
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async syncLeadCount() {
     try {
       const accounts = await this.crmProfileRepo.find();
