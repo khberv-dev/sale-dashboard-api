@@ -12,7 +12,7 @@ export class SynchronizeService {
     private readonly amoCrmService: AmocrmService,
   ) {}
 
-  @Cron('* * * * *')
+  @Cron('*/10 * * * *')
   async syncLeadCount() {
     try {
       const accounts = await this.crmProfileRepo.find();
