@@ -19,7 +19,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "db:clean": "typeorm schema:drop -d ./src/config/data-source.config.ts",
-    "db:sync": "typeorm schema:sync -d ./src/config/data-source.config.ts",
+    "db:sync": "nest build && typeorm schema:sync -d ./src/config/data-source.config.ts",
     "db:reset": "npm run db:clean && npm run db:sync",
     "db:seed": "node dist/seed.js",
     "migration:generate": "typeorm migration:generate -d ./src/config/data-source.config.ts -o",
