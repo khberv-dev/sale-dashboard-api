@@ -1,6 +1,15 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { UserRole } from '@shared/enum/user-role.enum';
 import { Sale } from '@shared/entities/sale.entity';
+import { CrmProfile } from '@shared/entities/crm-profiles.entity';
 
 @Entity('users')
 export class User {
@@ -33,6 +42,9 @@ export class User {
 
   @OneToMany(() => Sale, (sale) => sale.manager)
   sales: Sale[];
+
+  @OneToOne(() => CrmProfile, (crmProfile) => crmProfile.user)
+  crmProfile: CrmProfile;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

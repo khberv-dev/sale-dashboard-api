@@ -10,6 +10,8 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { NotifyModule } from '@shared/modules/notify/notify.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ContractModule } from '@modules/contract/contract.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { IntegrationModule } from '@modules/integration/integration.module';
 
 @Module({
   imports: [
@@ -25,11 +27,13 @@ import { ContractModule } from '@modules/contract/contract.module';
       isGlobal: true,
       ttl: 360000,
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     UserModule,
     SaleModule,
     NotifyModule,
     ContractModule,
+    IntegrationModule,
   ],
   controllers: [AppController],
 })

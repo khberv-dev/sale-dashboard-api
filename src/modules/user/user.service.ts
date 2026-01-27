@@ -5,10 +5,14 @@ import { User } from '@shared/entities/user.entity';
 import { UpdateUserRequest } from '@modules/user/dto/update-user-request.dto';
 import { checkPassword, hashPassword } from '@/utils/hash.util';
 import { UpdatePasswordRequest } from '@modules/user/dto/update-password-request.dto';
+import { CrmProfile } from '@shared/entities/crm-profiles.entity';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectRepository(User) private readonly userRepo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private readonly userRepo: Repository<User>,
+    @InjectRepository(CrmProfile) private readonly crmProfileRepository: Repository<CrmProfile>,
+  ) {}
 
   async getUserInfo(userId: string) {
     const user = await this.userRepo.findOne({
@@ -54,6 +58,13 @@ export class UserService {
 
     if (existingUsername && manager.username !== data.username) {
       throw new BadRequestException('Boshqa login kiriting');
+    }
+
+    if (data.crmAccount) {
+      await this.crmProfileRepository.save({
+        accountId: data.crmAccount,
+        userId,
+      });
     }
 
     let updateData: Partial<User> = {

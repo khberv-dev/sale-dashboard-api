@@ -15,4 +15,7 @@ export class UpdateUserRequest {
   @IsOptional()
   @IsString()
   password: string;
+
+  @IsOptional()
+  crmAccount: string;
 }
