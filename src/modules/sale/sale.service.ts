@@ -59,7 +59,7 @@ export class SaleService {
         break;
     }
 
-    return fixedAmount + bonus;
+    return Math.floor(fixedAmount + bonus);
   }
 
   async createSale(managerId: string, data: CreateSaleRequest) {
