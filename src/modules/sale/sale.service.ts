@@ -63,7 +63,11 @@ export class SaleService {
   }
 
   async createSale(managerId: string, data: CreateSaleRequest) {
+    const startDate = dayjs().startOf('month').toDate();
+    const endDate = dayjs().endOf('month').toDate();
     const saleDateTime = dayjs(data.date + ' ' + data.time, 'YYYY-MM-DD HH:mm');
+
+    const oldStats = await this.getStats({ startDate, endDate });
 
     const newSale = await this.saleRepo.save({
       manager: { id: managerId },
@@ -88,11 +92,11 @@ export class SaleService {
       .where('s.id=:saleId', { saleId: newSale.id })
       .getRawOne();
 
-    const startDate = dayjs().startOf('month').toDate();
-    const endDate = dayjs().endOf('month').toDate();
     const stats = await this.getStats({ startDate, endDate });
+    const is100MPassed =
+      Math.floor(stats.totalAmount / 100_000_000) - Math.floor(oldStats.totalAmount / 100_000_000) > 0;
 
-    this.eventGateway.broadcast('new-sale', newSaleData);
+    this.eventGateway.broadcast('new-sale', { ...newSaleData, is100MPassed });
     this.botService.notifySale(
       newSaleData.firstName,
       newSaleData.lastName,
