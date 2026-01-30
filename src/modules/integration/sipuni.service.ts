@@ -55,11 +55,19 @@ export class SipuniService implements OnModuleInit {
 
     calls.forEach((call) => {
       if (dayjs(call.time).isSame(now, 'month')) {
-        result.set(call.from, (result.get(call.from) || 0) + call.callDuration);
-        result.set(call.to, (result.get(call.from) || 0) + call.callDuration);
-        result.set(call.answeredBy, (result.get(call.from) || 0) + call.callDuration);
+        if (call.from.length < 5) {
+          result.set(call.from, (result.get(call.from) || 0) + call.callDuration);
+        }
+        if (call.to.length < 5) {
+          result.set(call.to, (result.get(call.to) || 0) + call.callDuration);
+        }
+        if (call.answeredBy.length < 5) {
+          result.set(call.answeredBy, (result.get(call.answeredBy) || 0) + call.callDuration);
+        }
       }
     });
+
+    console.log(result);
 
     return result;
   }
