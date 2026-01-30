@@ -72,6 +72,7 @@ export class UserService {
       firstName: data.firstName,
       lastName: data.lastName,
       username: data.username,
+      plan: data.plan,
     };
 
     if (data.password) {

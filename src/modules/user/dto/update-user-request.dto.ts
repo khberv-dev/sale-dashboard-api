@@ -1,4 +1,4 @@
-import { IsOptional, IsString, MinLength } from 'class-validator';
+import { IsInt, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UpdateUserRequest {
   @IsString()
@@ -21,4 +21,8 @@ export class UpdateUserRequest {
 
   @IsOptional()
   sipNumber: string;
+
+  @IsOptional()
+  @IsInt()
+  plan: number;
 }

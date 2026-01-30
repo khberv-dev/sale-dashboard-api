@@ -2,6 +2,7 @@ import { Body, Controller, Get, ParseIntPipe, Post, Put, Query, Req } from '@nes
 import { UserService } from '@modules/user/user.service';
 import { DefaultAuthGuard } from '@common/guards/default-auth.guard';
 import { UpdatePasswordRequest } from '@modules/user/dto/update-password-request.dto';
+import { IsAdmin } from '@common/decorators/is-admin.decorator';
 
 @DefaultAuthGuard
 @Controller('user')
@@ -18,6 +19,7 @@ export class UserController {
     return this.userService.getMonthPlan(req.user.id);
   }
 
+  @IsAdmin()
   @Put('set-month-plan')
   setMonthPlan(@Query('plan', ParseIntPipe) plan: number, @Req() req: any) {
     return this.userService.setMonthPlan(req.user.id, plan);
