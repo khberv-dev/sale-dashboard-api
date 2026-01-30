@@ -22,6 +22,7 @@ export class ManagerService {
         'u.last_name "lastName"',
         'u."username"',
         'u."avatar"',
+        'u."plan"',
         'u.is_active "isActive"',
         'cp.lead_count "leadCount"',
         'cp.account_id "accountId"',
