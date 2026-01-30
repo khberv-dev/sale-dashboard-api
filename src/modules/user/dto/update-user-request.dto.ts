@@ -18,4 +18,7 @@ export class UpdateUserRequest {
 
   @IsOptional()
   crmAccount: string;
+
+  @IsOptional()
+  sipNumber: string;
 }

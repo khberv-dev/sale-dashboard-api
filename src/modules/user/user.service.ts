@@ -63,6 +63,7 @@ export class UserService {
     if (data.crmAccount) {
       await this.crmProfileRepository.save({
         accountId: data.crmAccount,
+        sipNumber: data.sipNumber,
         userId,
       });
     }

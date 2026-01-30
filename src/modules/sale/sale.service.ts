@@ -123,13 +123,14 @@ export class SaleService {
 
   private async getManagersResult(startDate: Date, endDate: Date): Promise<any[]> {
     const result = await this.saleRepo.query(
-      `SELECT m.first_name    as "firstName",
-              m.last_name     as "lastName",
+      `SELECT m.first_name     as "firstName",
+              m.last_name      as "lastName",
               m.avatar,
               m.plan,
-              SUM(s.amount)   as "sale",
-              COUNT(*) as "saleCount",
-              cp.lead_count   as "leadCount"
+              SUM(s.amount)    as "sale",
+              COUNT(*)         as "saleCount",
+              cp.lead_count    as "leadCount",
+              cp.call_duration as "callDuration"
        FROM sales s
               LEFT JOIN users m
                         ON m.id = s.manager_id
@@ -137,7 +138,7 @@ export class SaleService {
                         ON cp.user_id = m.id
        WHERE s.sale_at BETWEEN $1
                AND $2
-       GROUP BY m.username, m.first_name, m.last_name, m.avatar, m.plan, cp.lead_count`,
+       GROUP BY m.username, m.first_name, m.last_name, m.avatar, m.plan, cp.lead_count, cp.call_duration`,
       [startDate, endDate],
     );
 

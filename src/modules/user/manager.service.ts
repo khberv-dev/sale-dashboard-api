@@ -25,6 +25,8 @@ export class ManagerService {
         'u.is_active "isActive"',
         'cp.lead_count "leadCount"',
         'cp.account_id "accountId"',
+        'cp.sip_number "sipNumber"',
+        'cp.call_duration "callDuration"',
         'u.created_at "createdAt"',
       ])
       .orderBy('u.created_at', 'DESC')

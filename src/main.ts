@@ -3,7 +3,6 @@ import { AppModule } from '@core/app.module';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { validationPipe } from '@shared/pipes/validation.pipe';
-import { SaleService } from '@modules/sale/sale.service';
 
 async function bootstrap() {
   const logger = new Logger('App');

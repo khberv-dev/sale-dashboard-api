@@ -13,6 +13,12 @@ export class CrmProfile {
   @Column({ name: 'account_id', nullable: true })
   accountId: string;
 
+  @Column({ name: 'sip_number', nullable: true })
+  sipNumber: string;
+
   @Column({ name: 'lead_count', default: 0 })
   leadCount: number;
+
+  @Column({ name: 'call_duration', default: 0 })
+  callDuration: number;
 }
