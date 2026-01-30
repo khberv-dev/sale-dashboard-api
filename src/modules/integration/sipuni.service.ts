@@ -67,8 +67,6 @@ export class SipuniService implements OnModuleInit {
       }
     });
 
-    console.log(result);
-
     return result;
   }
 }
