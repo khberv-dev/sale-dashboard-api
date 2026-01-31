@@ -147,7 +147,7 @@ export class SaleService {
 
   private async getDailyStat() {
     const startDate = dayjs().startOf('month').format('YYYY-MM-DD');
-    const endDate = dayjs().endOf('month').format('YYYY-MM-DD');
+    const endDate = dayjs().endOf('month').format('YYYY-MM-DD HH:mm:ss');
 
     const data: any[] = await this.saleRepo.query(
       `WITH date_range AS (SELECT generate_series(

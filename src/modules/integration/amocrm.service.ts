@@ -36,7 +36,7 @@ export class AmocrmService implements OnModuleInit {
       const res = await this.apiClient.get(url);
       const data = res.data as AmoCrmLeadsResponse;
 
-      if (data._links.next) {
+      if (data._links && data._links.next) {
         return fetch(data._links.next.href, count + data._embedded.leads.length);
       } else {
         return count + data._embedded.leads.length;
