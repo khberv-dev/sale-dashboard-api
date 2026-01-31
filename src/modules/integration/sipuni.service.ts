@@ -54,7 +54,7 @@ export class SipuniService implements OnModuleInit {
     const calls = await this.getCallStats();
 
     calls.forEach((call) => {
-      if (dayjs(call.time).isSame(now, 'month')) {
+      if (dayjs(call.time).isSame(now, 'day')) {
         if (call.from.length < 5) {
           result.set(call.from, (result.get(call.from) || 0) + call.callDuration);
         }
