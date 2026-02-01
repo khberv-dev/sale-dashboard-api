@@ -40,6 +40,9 @@ export class User {
   @Column()
   password: string;
 
+  @Column({ name: 'telegram_id', nullable: true })
+  telegramId: string;
+
   @OneToMany(() => Sale, (sale) => sale.manager)
   sales: Sale[];
 
