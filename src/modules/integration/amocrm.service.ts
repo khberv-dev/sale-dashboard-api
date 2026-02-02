@@ -34,10 +34,10 @@ export class AmocrmService implements OnModuleInit {
     return res.data as AmoCrmUsersResponse;
   }
 
-  async getLeadsCount(accountId: string) {
+  async getLeadsCount(accountId: string, startDate: Date, endDate: Date) {
     const now = dayjs();
-    const startDate = Math.floor(now.startOf('month').toDate().getTime() / 1000);
-    const endDate = Math.floor(now.toDate().getTime());
+    const startDateTime = Math.floor(dayjs(startDate).startOf('month').toDate().getTime() / 1000);
+    const endDateTime = Math.floor(dayjs(endDate).toDate().getTime());
     const fetch = async (url: string, count: number = 0) => {
       const res = await this.apiClient.get(url);
       const data = res.data as AmoCrmLeadsResponse;
@@ -55,8 +55,8 @@ export class AmocrmService implements OnModuleInit {
 
     return fetch(
       `leads?order[created_at]=desc&` +
-        `filter[created_at][from]=${startDate}&` +
-        `filter[created_at][end]=${endDate}&` +
+        `filter[created_at][from]=${startDateTime}&` +
+        `filter[created_at][end]=${endDateTime}&` +
         `filter[responsible_user_id]=${accountId}`,
     );
   }
@@ -64,9 +64,12 @@ export class AmocrmService implements OnModuleInit {
   async syncLeadCount() {
     try {
       const accounts = await this.crmProfileRepo.find();
+      const now = dayjs();
+      const startDate = now.startOf('month').toDate();
+      const endDate = now.toDate();
 
       for (const account of accounts) {
-        const leadCount = await this.getLeadsCount(account.accountId);
+        const leadCount = await this.getLeadsCount(account.accountId, startDate, endDate);
 
         await this.crmProfileRepo.save({
           ...account,

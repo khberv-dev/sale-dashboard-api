@@ -54,13 +54,14 @@ export class SipuniService implements OnModuleInit {
     return this.parseCallData(await response);
   }
 
-  async calculateCallDurations() {
-    const now = dayjs();
+  async calculateCallDurations(startDate: Date, endDate: Date) {
+    const _startDate = dayjs(startDate);
+    const _endDate = dayjs(endDate);
     const result: Map<string, number> = new Map();
     const calls = await this.getCallStats();
 
     calls.forEach((call) => {
-      if (dayjs(call.time).isSame(now, 'day')) {
+      if (dayjs(call.time).isAfter(_startDate) && dayjs(call.time).isBefore(_endDate)) {
         if (call.from.length < 5) {
           result.set(call.from, (result.get(call.from) || 0) + call.callDuration);
         }
@@ -78,7 +79,9 @@ export class SipuniService implements OnModuleInit {
 
   async syncCallDuration() {
     try {
-      const callData = await this.calculateCallDurations();
+      const startDate = dayjs().startOf('day');
+      const endDate = startDate.endOf('day');
+      const callData = await this.calculateCallDurations(startDate.toDate(), endDate.toDate());
       const accounts = await this.crmProfileRepo.find();
 
       for (const account of accounts) {

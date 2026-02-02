@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { AmocrmService } from '@modules/integration/amocrm.service';
 import { SipuniService } from '@modules/integration/sipuni.service';
+import { StaffBotService } from '@modules/integration/staff-bot.service';
 
 @Injectable()
 export class SynchronizeService {
   constructor(
     private readonly amoCrmService: AmocrmService,
     private readonly sipuniService: SipuniService,
+    private readonly staffBotService: StaffBotService,
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -18,5 +20,10 @@ export class SynchronizeService {
   @Cron(CronExpression.EVERY_5_MINUTES)
   syncCallDurationCron() {
     this.sipuniService.syncCallDuration();
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_5AM)
+  sendDailyReportsCron() {
+    this.staffBotService.sendDailyReports();
   }
 }
