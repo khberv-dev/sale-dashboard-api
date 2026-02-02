@@ -4,10 +4,16 @@ import axios, { AxiosInstance } from 'axios';
 import { AmoCrmUsersResponse } from '@shared/dto/amo-crm-users-response.dto';
 import { AmoCrmLeadsResponse } from '@shared/dto/amo-crm-leads-response.dto';
 import dayjs from 'dayjs';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CrmProfile } from '@shared/entities/crm-profiles.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AmocrmService implements OnModuleInit {
-  constructor(private readonly config: ConfigService) {}
+  constructor(
+    @InjectRepository(CrmProfile) private readonly crmProfileRepo: Repository<CrmProfile>,
+    private readonly config: ConfigService,
+  ) {}
 
   apiClient: AxiosInstance;
 
@@ -53,5 +59,22 @@ export class AmocrmService implements OnModuleInit {
         `filter[created_at][end]=${endDate}&` +
         `filter[responsible_user_id]=${accountId}`,
     );
+  }
+
+  async syncLeadCount() {
+    try {
+      const accounts = await this.crmProfileRepo.find();
+
+      for (const account of accounts) {
+        const leadCount = await this.getLeadsCount(account.accountId);
+
+        await this.crmProfileRepo.save({
+          ...account,
+          leadCount,
+        });
+      }
+    } catch (e) {
+      console.log('Error counting leads:', e);
+    }
   }
 }

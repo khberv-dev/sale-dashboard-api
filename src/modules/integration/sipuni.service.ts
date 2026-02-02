@@ -5,12 +5,18 @@ import { hashMD5Object } from '@/utils/hash.util';
 import { objectToQuery } from '@/utils/lib.util';
 import { SipuniCallItem } from '@shared/dto/sipuni-call-item.dto';
 import dayjs from 'dayjs';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CrmProfile } from '@shared/entities/crm-profiles.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class SipuniService implements OnModuleInit {
   apiClient: AxiosInstance;
 
-  constructor(private readonly config: ConfigService) {}
+  constructor(
+    @InjectRepository(CrmProfile) private readonly crmProfileRepo: Repository<CrmProfile>,
+    private readonly config: ConfigService,
+  ) {}
 
   onModuleInit() {
     this.apiClient = axios.create({
@@ -68,5 +74,23 @@ export class SipuniService implements OnModuleInit {
     });
 
     return result;
+  }
+
+  async syncCallDuration() {
+    try {
+      const callData = await this.calculateCallDurations();
+      const accounts = await this.crmProfileRepo.find();
+
+      for (const account of accounts) {
+        if (account.sipNumber) {
+          await this.crmProfileRepo.save({
+            ...account,
+            callDuration: callData.get(account.sipNumber),
+          });
+        }
+      }
+    } catch (e) {
+      console.log('Error calculating call durations:', e);
+    }
   }
 }
