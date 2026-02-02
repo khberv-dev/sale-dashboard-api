@@ -12,9 +12,11 @@ export class BotService implements OnModuleInit {
   }
 
   bot: Bot;
+  staffBot: Bot;
 
   onModuleInit() {
     this.bot = new Bot(this.configService.getOrThrow<string>('BOT_TOKEN'));
+    this.staffBot = new Bot(this.configService.getOrThrow<string>('STAFF_BOT_TOKEN'));
 
     this.bot.on('message', async (context) => {
       try {
@@ -31,28 +33,36 @@ export class BotService implements OnModuleInit {
     });
   }
 
-  notifySale(
+  async notifySale(
     firstName: string,
     lastName: string,
     amount: number,
     dailyAmount: number,
     monthlyAmount: number,
     type: string,
+    managerUserId: string,
   ) {
-    const fullName = firstName + ' ' + (lastName ? lastName : '');
-    const messageText =
-      '<b>💵 SOTUV ❗️❗️❗️</>\n' +
-      '━━━━━━━━━━━━━━\n' +
-      `👤<b>${fullName}</b>\n` +
-      `💰${formatNumber(amount)} so'm\n` +
-      `📃 <b>${type}</b>\n` +
-      `📈<b>Bugun:</b> ${formatNumber(dailyAmount)}\n` +
-      `🗓<b>Oy:</b> ${formatNumber(monthlyAmount)}\n` +
-      '━━━━━━━━━━━━━━\n' +
-      '📌 Keyingisi kim?';
+    try {
+      const fullName = firstName + ' ' + (lastName ? lastName : '');
+      const messageText =
+        '<b>💵 SOTUV ❗️❗️❗️</>\n' +
+        '━━━━━━━━━━━━━━\n' +
+        `👤<b>${fullName}</b>\n` +
+        `💰${formatNumber(amount)} so'm\n` +
+        `📃 <b>${type}</b>\n` +
+        `📈<b>Bugun:</b> ${formatNumber(dailyAmount)}\n` +
+        `🗓<b>Oy:</b> ${formatNumber(monthlyAmount)}\n` +
+        '━━━━━━━━━━━━━━\n' +
+        '📌 Keyingisi kim?';
 
-    return this.bot.api.sendMessage(this.groupId, messageText, {
-      parse_mode: 'HTML',
-    });
+      await this.staffBot.api.sendMessage(managerUserId, messageText, {
+        parse_mode: 'HTML',
+      });
+      await this.bot.api.sendMessage(this.groupId, messageText, {
+        parse_mode: 'HTML',
+      });
+    } catch (e) {
+      console.log('Error sale notifying: ' + e);
+    }
   }
 }

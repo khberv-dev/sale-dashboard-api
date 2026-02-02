@@ -62,7 +62,7 @@ export class SaleService {
     return Math.floor(fixedAmount + bonus);
   }
 
-  async createSale(managerId: string, data: CreateSaleRequest) {
+  async createSale(managerUserId: string, data: CreateSaleRequest) {
     const startDate = dayjs().startOf('month').toDate();
     const endDate = dayjs().endOf('month').toDate();
     const saleDateTime = dayjs(data.date + ' ' + data.time, 'YYYY-MM-DD HH:mm');
@@ -70,7 +70,7 @@ export class SaleService {
     const oldStats = await this.getStats({ startDate, endDate });
 
     const newSale = await this.saleRepo.save({
-      manager: { id: managerId },
+      manager: { id: managerUserId },
       amount: data.amount,
       contractNumber: data.contractNumber,
       type: { id: data.type },
@@ -104,6 +104,7 @@ export class SaleService {
       stats.dailyAmount,
       stats.totalAmount,
       newSaleData.type,
+      managerUserId,
     );
 
     return {
