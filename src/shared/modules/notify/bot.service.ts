@@ -40,7 +40,7 @@ export class BotService implements OnModuleInit {
     dailyAmount: number,
     monthlyAmount: number,
     type: string,
-    managerUserId: string,
+    managerTelegramId: string | null,
   ) {
     try {
       const fullName = firstName + ' ' + (lastName ? lastName : '');
@@ -55,10 +55,12 @@ export class BotService implements OnModuleInit {
         '━━━━━━━━━━━━━━\n' +
         '📌 Keyingisi kim?';
 
-      await this.staffBot.api.sendMessage(managerUserId, messageText, {
-        parse_mode: 'HTML',
-      });
-      await this.bot.api.sendMessage(this.groupId, messageText, {
+      if (managerTelegramId) {
+        this.staffBot.api.sendMessage(managerTelegramId, messageText, {
+          parse_mode: 'HTML',
+        });
+      }
+      this.bot.api.sendMessage(this.groupId, messageText, {
         parse_mode: 'HTML',
       });
     } catch (e) {

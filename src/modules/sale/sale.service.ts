@@ -67,6 +67,16 @@ export class SaleService {
     const endDate = dayjs().endOf('month').toDate();
     const saleDateTime = dayjs(data.date + ' ' + data.time, 'YYYY-MM-DD HH:mm');
 
+    const managerUser = await this.userRepo.findOne({
+      where: {
+        id: managerUserId,
+      },
+    });
+
+    if (!managerUser) {
+      throw new BadRequestException();
+    }
+
     const oldStats = await this.getStats({ startDate, endDate });
 
     const newSale = await this.saleRepo.save({
@@ -104,7 +114,7 @@ export class SaleService {
       stats.dailyAmount,
       stats.totalAmount,
       newSaleData.type,
-      managerUserId,
+      managerUser.telegramId,
     );
 
     return {
