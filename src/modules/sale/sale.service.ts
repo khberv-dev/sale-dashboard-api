@@ -148,6 +148,7 @@ export class SaleService {
                           AND s.sale_at BETWEEN $1 AND $2
               LEFT JOIN "crm-profiles" cp
                         ON cp.user_id = m.id
+       WHERE m.role = 'MANAGER'
        GROUP BY m.id,
                 m.first_name,
                 m.last_name,
