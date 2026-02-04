@@ -33,7 +33,7 @@ export class BotService implements OnModuleInit {
     });
   }
 
-  async notifySale(
+  notifySale(
     firstName: string,
     lastName: string,
     amount: number,
