@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateSaleRequest } from '@modules/sale/dto/create-sale-request.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { Sale } from '@shared/entities/sale.entity';
 import dayjs from 'dayjs';
 import { SaleType } from '@shared/entities/sale-type.entity';
@@ -12,6 +12,7 @@ import { EventGateway } from '@shared/modules/ws/event.gateway';
 import { UpdateSaleTypeRequest } from '@modules/sale/dto/update-sale-type-request.dto';
 import { BotService } from '@shared/modules/notify/bot.service';
 import { UserRole } from '@shared/enum/user-role.enum';
+import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
 
 @Injectable()
 export class SaleService {
@@ -19,6 +20,7 @@ export class SaleService {
     @InjectRepository(Sale) private readonly saleRepo: Repository<Sale>,
     @InjectRepository(SaleType) private readonly saleTypeRepo: Repository<SaleType>,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
+    @InjectRepository(SalaryBonus) private readonly salaryBonusRepo: Repository<SalaryBonus>,
     private readonly eventGateway: EventGateway,
     private readonly botService: BotService,
   ) {}
@@ -37,29 +39,41 @@ export class SaleService {
     return admin.plan;
   }
 
-  calculateSalary(saleAmount: number) {
-    const fixedAmount = 2_000_000;
-    let bonus = 0;
+  async calculateSalary(managerUserId: string, saleAmount: number) {
+    const startDate = dayjs().startOf('month');
+    const endDate = dayjs().endOf('month');
+    const fixedSalaryAmount = 1_000_000;
+    let saleBonus = 0;
+    let salaryBonus = 0;
 
     switch (true) {
       case saleAmount > 50_000_000:
-        bonus = saleAmount * 0.1;
+        saleBonus = saleAmount * 0.1;
         break;
       case saleAmount > 40_000_000:
-        bonus = saleAmount * 0.09;
+        saleBonus = saleAmount * 0.09;
         break;
       case saleAmount > 30_000_000:
-        bonus = saleAmount * 0.07;
+        saleBonus = saleAmount * 0.07;
         break;
       case saleAmount > 20_000_000:
-        bonus = saleAmount * 0.05;
+        saleBonus = saleAmount * 0.05;
         break;
       case saleAmount > 10_000_000:
-        bonus = saleAmount * 0.03;
+        saleBonus = saleAmount * 0.03;
         break;
     }
 
-    return Math.floor(fixedAmount + bonus);
+    const salaryBonuses = await this.salaryBonusRepo.find({
+      where: {
+        user: { id: managerUserId },
+        date: Between(startDate.toDate(), endDate.toDate()),
+      },
+    });
+
+    salaryBonuses.forEach((bonus) => (salaryBonus += bonus.amount));
+
+    return Math.floor(fixedSalaryAmount + saleBonus + salaryBonus);
   }
 
   async createSale(managerUserId: string, data: CreateSaleRequest) {
@@ -134,7 +148,8 @@ export class SaleService {
 
   private async getManagersResult(startDate: Date, endDate: Date): Promise<any[]> {
     const result = await this.saleRepo.query(
-      `SELECT m.first_name               AS "firstName",
+      `SELECT m.id,
+              m.first_name               AS "firstName",
               m.last_name                AS "lastName",
               m.avatar,
               m.plan,
@@ -161,7 +176,12 @@ export class SaleService {
       [startDate, endDate],
     );
 
-    return result.map((manager) => ({ ...manager, salary: this.calculateSalary(manager.sale) }));
+    return Promise.all(
+      result.map(async (manager) => {
+        const salary = await this.calculateSalary(manager.id, manager.sale);
+        return { ...manager, salary };
+      }),
+    );
   }
 
   private async getDailyStat() {

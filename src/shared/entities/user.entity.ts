@@ -10,6 +10,8 @@ import {
 import { UserRole } from '@shared/enum/user-role.enum';
 import { Sale } from '@shared/entities/sale.entity';
 import { CrmProfile } from '@shared/entities/crm-profiles.entity';
+import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
+import { Attendance } from '@shared/entities/attendance.entity';
 
 @Entity('users')
 export class User {
@@ -37,7 +39,7 @@ export class User {
   @Column({ nullable: true })
   avatar: string;
 
-  @Column()
+  @Column({ select: false })
   password: string;
 
   @Column({ name: 'telegram_id', nullable: true })
@@ -45,6 +47,12 @@ export class User {
 
   @OneToMany(() => Sale, (sale) => sale.manager)
   sales: Sale[];
+
+  @OneToMany(() => Attendance, (attendance) => attendance.user)
+  attendances: Attendance[];
+
+  @OneToMany(() => SalaryBonus, (salaryBonus) => salaryBonus.user)
+  bonuses: SalaryBonus[];
 
   @OneToOne(() => CrmProfile, (crmProfile) => crmProfile.user)
   crmProfile: CrmProfile;

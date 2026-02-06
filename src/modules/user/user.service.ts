@@ -1,17 +1,21 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { User } from '@shared/entities/user.entity';
 import { UpdateUserRequest } from '@modules/user/dto/update-user-request.dto';
 import { checkPassword, hashPassword } from '@/utils/hash.util';
 import { UpdatePasswordRequest } from '@modules/user/dto/update-password-request.dto';
 import { CrmProfile } from '@shared/entities/crm-profiles.entity';
+import { RegisterAttendanceRequest } from '@modules/user/dto/register-attendance-request.dto';
+import { Attendance } from '@shared/entities/attendance.entity';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     @InjectRepository(CrmProfile) private readonly crmProfileRepository: Repository<CrmProfile>,
+    @InjectRepository(Attendance) private readonly attendanceRepository: Repository<Attendance>,
   ) {}
 
   async getUserInfo(userId: string) {
@@ -139,5 +143,44 @@ export class UserService {
     return {
       message: 'Parol yangilandi',
     };
+  }
+
+  async registerAttendance(data: RegisterAttendanceRequest) {
+    const startDate = dayjs().startOf('day');
+    const endDate = startDate.endOf('day');
+
+    const attendance = await this.attendanceRepository.findOne({
+      where: {
+        user: { id: data.userId },
+        date: Between(startDate.toDate(), endDate.toDate()),
+      },
+    });
+
+    if (attendance) {
+      throw new BadRequestException('Bu xodim kelgan');
+    }
+
+    await this.attendanceRepository.save({
+      user: {
+        id: data.userId,
+      },
+      date: new Date(),
+    });
+
+    return {
+      message: 'Qabul qilindi',
+    };
+  }
+
+  getTodayAttendances() {
+    const startDate = dayjs().startOf('day');
+    const endDate = startDate.endOf('day');
+
+    return this.userRepo.query(
+      `select u.id, u.first_name as "firstName", u.last_name as "lastName", u.avatar, a.date as "attendanceDate"
+       from users u
+              left join attendances a on a.user_id = u.id and a.date between $1 and $2`,
+      [startDate.toDate(), endDate.toDate()],
+    );
   }
 }

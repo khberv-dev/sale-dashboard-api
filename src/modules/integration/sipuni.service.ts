@@ -7,7 +7,9 @@ import { SipuniCallItem } from '@shared/dto/sipuni-call-item.dto';
 import dayjs from 'dayjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CrmProfile } from '@shared/entities/crm-profiles.entity';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
+import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
+import { SalaryBonusType } from '@shared/enum/salary-bonus-type.enum';
 
 @Injectable()
 export class SipuniService implements OnModuleInit {
@@ -15,6 +17,7 @@ export class SipuniService implements OnModuleInit {
 
   constructor(
     @InjectRepository(CrmProfile) private readonly crmProfileRepo: Repository<CrmProfile>,
+    @InjectRepository(SalaryBonus) private readonly salaryBonusRepo: Repository<SalaryBonus>,
     private readonly config: ConfigService,
   ) {}
 
@@ -77,7 +80,7 @@ export class SipuniService implements OnModuleInit {
     return result;
   }
 
-  async syncCallDuration() {
+  async syncDailyCallDuration() {
     try {
       const startDate = dayjs().startOf('day');
       const endDate = startDate.endOf('day');
@@ -85,10 +88,39 @@ export class SipuniService implements OnModuleInit {
       const accounts = await this.crmProfileRepo.find();
 
       for (const account of accounts) {
+        const duration = callData.get(account.sipNumber);
+
+        if (!duration) {
+          continue;
+        }
+
+        if (duration >= 3 * 60 * 60) {
+          const bonus = await this.salaryBonusRepo.findOne({
+            where: {
+              user: {
+                id: account.userId,
+              },
+              date: Between(startDate.toDate(), endDate.toDate()),
+              type: SalaryBonusType.CALL,
+            },
+          });
+
+          if (!bonus) {
+            await this.salaryBonusRepo.save({
+              user: {
+                id: account.userId,
+              },
+              amount: 30_000,
+              date: startDate.add(5, 'hour').toDate(),
+              type: SalaryBonusType.CALL,
+            });
+          }
+        }
+
         if (account.sipNumber) {
           await this.crmProfileRepo.save({
             ...account,
-            callDuration: callData.get(account.sipNumber),
+            callDuration: duration,
           });
         }
       }

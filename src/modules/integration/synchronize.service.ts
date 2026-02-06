@@ -12,14 +12,14 @@ export class SynchronizeService {
     private readonly staffBotService: StaffBotService,
   ) {}
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   syncLeadCountCron() {
     this.amoCrmService.syncLeadCount();
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
-  syncCallDurationCron() {
-    this.sipuniService.syncCallDuration();
+  @Cron(CronExpression.EVERY_MINUTE)
+  syncDailyCallDurationCron() {
+    this.sipuniService.syncDailyCallDuration();
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_5AM)
