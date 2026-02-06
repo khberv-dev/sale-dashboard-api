@@ -9,6 +9,7 @@ import { CrmProfile } from '@shared/entities/crm-profiles.entity';
 import { RegisterAttendanceRequest } from '@modules/user/dto/register-attendance-request.dto';
 import { Attendance } from '@shared/entities/attendance.entity';
 import dayjs from 'dayjs';
+import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
 
 @Injectable()
 export class UserService {
@@ -16,6 +17,7 @@ export class UserService {
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     @InjectRepository(CrmProfile) private readonly crmProfileRepository: Repository<CrmProfile>,
     @InjectRepository(Attendance) private readonly attendanceRepository: Repository<Attendance>,
+    @InjectRepository(SalaryBonus) private readonly salaryBonusRepository: Repository<SalaryBonus>,
   ) {}
 
   async getUserInfo(userId: string) {
@@ -165,6 +167,13 @@ export class UserService {
         id: data.userId,
       },
       date: new Date(),
+    });
+
+    await this.salaryBonusRepository.save({
+      user: {
+        id: data.userId,
+      },
+      amount: 29000,
     });
 
     return {
