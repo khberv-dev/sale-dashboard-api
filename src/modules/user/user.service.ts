@@ -179,7 +179,8 @@ export class UserService {
     return this.userRepo.query(
       `select u.id, u.first_name as "firstName", u.last_name as "lastName", u.avatar, a.date as "attendanceDate"
        from users u
-              left join attendances a on a.user_id = u.id and a.date between $1 and $2`,
+              left join attendances a on a.user_id = u.id and a.date between $1 and $2
+       where u.role = 'MANAGER'`,
       [startDate.toDate(), endDate.toDate()],
     );
   }

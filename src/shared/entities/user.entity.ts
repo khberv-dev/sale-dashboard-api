@@ -45,6 +45,9 @@ export class User {
   @Column({ name: 'telegram_id', nullable: true })
   telegramId: string;
 
+  @Column({ name: 'start_work_hour', nullable: true })
+  startWorkHour: string;
+
   @OneToMany(() => Sale, (sale) => sale.manager)
   sales: Sale[];
 
