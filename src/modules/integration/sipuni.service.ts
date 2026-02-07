@@ -10,15 +10,20 @@ import { CrmProfile } from '@shared/entities/crm-profiles.entity';
 import { Between, Repository } from 'typeorm';
 import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
 import { SalaryBonusType } from '@shared/enum/salary-bonus-type.enum';
+import { BotService } from '@shared/modules/notify/bot.service';
+import { User } from '@shared/entities/user.entity';
+import { CALL_DURATION_REACH_BONUS_SUM, MINIMUM_CALL_DURATION_HOURS } from '@shared/constants';
 
 @Injectable()
 export class SipuniService implements OnModuleInit {
   apiClient: AxiosInstance;
 
   constructor(
+    @InjectRepository(User) private readonly userRepo: Repository<User>,
     @InjectRepository(CrmProfile) private readonly crmProfileRepo: Repository<CrmProfile>,
     @InjectRepository(SalaryBonus) private readonly salaryBonusRepo: Repository<SalaryBonus>,
     private readonly config: ConfigService,
+    private readonly botService: BotService,
   ) {}
 
   onModuleInit() {
@@ -94,7 +99,12 @@ export class SipuniService implements OnModuleInit {
           continue;
         }
 
-        if (duration >= 2.5 * 60 * 60) {
+        if (duration >= MINIMUM_CALL_DURATION_HOURS * 60 * 60) {
+          const user = await this.userRepo.findOneOrFail({
+            where: {
+              id: account.userId,
+            },
+          });
           const bonus = await this.salaryBonusRepo.findOne({
             where: {
               user: {
@@ -110,10 +120,12 @@ export class SipuniService implements OnModuleInit {
               user: {
                 id: account.userId,
               },
-              amount: 30_000,
+              amount: CALL_DURATION_REACH_BONUS_SUM,
               date: startDate.add(5, 'hour').toDate(),
               type: SalaryBonusType.CALL,
             });
+
+            this.botService.notifyCallBonus(user.telegramId, duration);
           }
         }
 

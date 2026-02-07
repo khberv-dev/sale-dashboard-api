@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import { AmocrmService } from '@modules/integration/amocrm.service';
 import { formatTime } from '@/utils/formatter.util';
 import { SipuniService } from '@modules/integration/sipuni.service';
+import { CALL_DURATION_REACH_BONUS_SUM, MINIMUM_CALL_DURATION_HOURS } from '@shared/constants';
 
 @Injectable()
 export class StaffBotService implements OnModuleInit {
@@ -51,11 +52,12 @@ export class StaffBotService implements OnModuleInit {
     await context.reply('✅ Akkaunt ulandi');
   };
 
-  private getManagerDailySaleResults(userId: string, startDate: Date, endDate: Date): Promise<any[]> {
+  private getManagerSaleResults(userId: string, startDate: Date, endDate: Date): Promise<any[]> {
     return this.userRepo.query(
-      `select count(*) as "saleCount", sum(s.amount) as "saleAmount"
+      `select count(*) as "saleCount", coalesce(sum(s.amount), 0) as "saleAmount"
        from sales s
-       where manager_id = $1 and s.sale_at between $2 and $3`,
+       where manager_id = $1
+         and s.sale_at between $2 and $3`,
       [userId, startDate, endDate],
     );
   }
@@ -64,6 +66,8 @@ export class StaffBotService implements OnModuleInit {
     try {
       const startDate = dayjs().subtract(1, 'day').startOf('day');
       const endDate = startDate.add(1, 'day');
+      const monthStartDate = dayjs().startOf('month');
+      const monthEndDate = dayjs().endOf('month');
       const users = await this.userRepo.find({
         relations: ['crmProfile'],
       });
@@ -72,7 +76,10 @@ export class StaffBotService implements OnModuleInit {
         if (!user.telegramId) continue;
 
         const crmProfile = user.crmProfile;
-        const saleData = (await this.getManagerDailySaleResults(user.id, startDate.toDate(), endDate.toDate()))[0];
+        const saleData = (await this.getManagerSaleResults(user.id, startDate.toDate(), endDate.toDate()))[0];
+        const monthSaleData = (
+          await this.getManagerSaleResults(user.id, monthStartDate.toDate(), monthEndDate.toDate())
+        )[0];
         const leadCount = await this.amocrmService.getLeadsCount(
           crmProfile.accountId,
           startDate.toDate(),
@@ -82,11 +89,20 @@ export class StaffBotService implements OnModuleInit {
         const callTime = callTimeData[crmProfile.sipNumber];
 
         const messageText =
-          `🗓 <b>${startDate.format('DD.MM.YYYY')}</b>\n\n` +
-          `🪙 <b>Sotuvlar: </b>${saleData.saleCount} ta\n` +
-          `💰 <b>Sotuv miqdori: </b>${saleData.saleAmount ? saleData.saleAmount : 0} so'm\n` +
-          `📲 <b>Lidlar soni: </b>${leadCount} ta\n` +
-          `📞 <b>Calltime: </b>${formatTime(callTime ? callTime : 0)}`;
+          `<b><i>Bu natija — sizning mehnatingiz.\n` +
+          `Bu mehnat pulga aylanyapti.</i></b>\n\n` +
+          `💰 + ${saleData.saleAmount} so'm so‘m\n\n` +
+          `📈 <b>Oylik sotuv daromadi:</b>\n` +
+          `${monthSaleData.saleAmount} so'm\n\n` +
+          `🔵 KUN YAKUNI (FINAL HISOB)\n` +
+          `📊 BUGUNGI KUN YAKUNI\n\n` +
+          `📦 Sotuvlar:` +
+          `${saleData.saleCount} ta → + ${saleData.saleAmount} so‘m\n\n` +
+          `📞 Call time:\n` +
+          `${formatTime(callTime ? callTime : 0)}\n` +
+          `Bonus: ${callTime >= MINIMUM_CALL_DURATION_HOURS ? CALL_DURATION_REACH_BONUS_SUM : 0} so'm\n\n` +
+          `Bugun ishlaganingiz —\n` +
+          `ertangi daromadingiz.`;
 
         await this.bot.api.sendMessage(user.telegramId, messageText, {
           parse_mode: 'HTML',

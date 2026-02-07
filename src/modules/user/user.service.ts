@@ -11,6 +11,7 @@ import { Attendance } from '@shared/entities/attendance.entity';
 import dayjs from 'dayjs';
 import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
 import { SalaryBonusType } from '@shared/enum/salary-bonus-type.enum';
+import { ATTENDANCE_BONUS_SUM } from '@shared/constants';
 
 @Injectable()
 export class UserService {
@@ -174,7 +175,7 @@ export class UserService {
       user: {
         id: data.userId,
       },
-      amount: 29000,
+      amount: ATTENDANCE_BONUS_SUM,
       type: SalaryBonusType.ATTENDANCE,
       date: new Date(),
     });
