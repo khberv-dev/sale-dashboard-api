@@ -10,6 +10,7 @@ import { RegisterAttendanceRequest } from '@modules/user/dto/register-attendance
 import { Attendance } from '@shared/entities/attendance.entity';
 import dayjs from 'dayjs';
 import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
+import { SalaryBonusType } from '@shared/enum/salary-bonus-type.enum';
 
 @Injectable()
 export class UserService {
@@ -174,6 +175,7 @@ export class UserService {
         id: data.userId,
       },
       amount: 29000,
+      type: SalaryBonusType.ATTENDANCE,
     });
 
     return {
