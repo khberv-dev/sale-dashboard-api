@@ -17,7 +17,7 @@ export class SynchronizeService {
     this.amoCrmService.syncLeadCount();
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   syncDailyCallDurationCron() {
     this.sipuniService.syncDailyCallDuration();
   }
