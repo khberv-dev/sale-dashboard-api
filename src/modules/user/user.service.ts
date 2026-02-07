@@ -176,6 +176,7 @@ export class UserService {
       },
       amount: 29000,
       type: SalaryBonusType.ATTENDANCE,
+      date: new Date(),
     });
 
     return {
