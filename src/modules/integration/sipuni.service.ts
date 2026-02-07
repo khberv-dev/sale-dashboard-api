@@ -94,7 +94,7 @@ export class SipuniService implements OnModuleInit {
           continue;
         }
 
-        if (duration >= 3 * 60 * 60) {
+        if (duration >= 2.5 * 60 * 60) {
           const bonus = await this.salaryBonusRepo.findOne({
             where: {
               user: {
