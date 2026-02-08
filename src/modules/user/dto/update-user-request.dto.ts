@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UpdateUserRequest {
   @IsString()
@@ -25,4 +25,8 @@ export class UpdateUserRequest {
   @IsOptional()
   @IsInt()
   plan: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isActive: boolean;
 }

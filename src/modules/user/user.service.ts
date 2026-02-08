@@ -81,6 +81,7 @@ export class UserService {
       lastName: data.lastName,
       username: data.username,
       plan: data.plan,
+      isActive: data.isActive,
     };
 
     if (data.password) {

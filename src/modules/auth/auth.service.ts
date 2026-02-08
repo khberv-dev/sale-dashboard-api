@@ -16,7 +16,8 @@ export class AuthService {
   private async validateUserUsername(username: string, password: string) {
     const [user] = (await this.userRepo.query(`select *
                                                from users u
-                                               where u.username = $1`, [username])) as User[];
+                                               where u.username = $1
+                                                 and is_active`, [username])) as User[];
 
     if (!user) {
       return null;
