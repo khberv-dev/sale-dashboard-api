@@ -51,7 +51,7 @@ export class StaffBotService implements OnModuleInit {
 
     await context.reply(
       `Assalomu Aleykum 😊\n\n\n` +
-        `Sizda  o’zgarmas oylik ..(to’liq oy uchun 1 mln )` +
+        `Sizda  o’zgarmas oylik to’liq oy uchun 1 mln\n` +
         `Oy davomida sizda yana quyidagi KPI  va unga bog’langan bonuslar bor\n\n` +
         `Call time uchun : 30 000 kunlik ( Kunlik 2.5 soat uchun )\n\n\n` +
         `Sizdan yuqori natija kutib qolamiz\n\n\n` +
