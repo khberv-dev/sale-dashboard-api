@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Bot, CommandContext, Context } from 'grammy';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -20,6 +20,7 @@ export class StaffBotService implements OnModuleInit {
   ) {}
 
   private bot: Bot;
+  private logger = new Logger('Staff-bot service');
 
   onModuleInit() {
     this.bot = new Bot(this.config.getOrThrow<string>('STAFF_BOT_TOKEN'));
@@ -27,6 +28,8 @@ export class StaffBotService implements OnModuleInit {
     this.bot.command('start', this.handleStartCommand);
 
     this.bot.start({ drop_pending_updates: true });
+
+    this.sendDailyReports();
   }
 
   private handleStartCommand = async (context: CommandContext<Context>) => {
@@ -113,12 +116,13 @@ export class StaffBotService implements OnModuleInit {
           `Bugun ishlaganingiz —\n` +
           `ertangi daromadingiz.`;
 
+        this.logger.log('Sending daily report to ' + user.firstName + ' ' + user.telegramId);
         await this.bot.api.sendMessage(user.telegramId, messageText, {
           parse_mode: 'HTML',
         });
       }
     } catch (e) {
-      console.log(e);
+      this.logger.error(e.toString());
     }
   }
 }
