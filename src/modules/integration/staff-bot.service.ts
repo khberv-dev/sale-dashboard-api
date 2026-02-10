@@ -100,12 +100,12 @@ export class StaffBotService implements OnModuleInit {
         const messageText =
           `<b><i>Bu natija — sizning mehnatingiz.\n` +
           `Bu mehnat pulga aylanyapti.</i></b>\n\n` +
-          `💰 + ${saleData.saleAmount} so'm so‘m\n\n` +
+          `💰 +${saleData.saleAmount} so'm so‘m\n\n` +
           `📈 <b>Oylik sotuv daromadi:</b>\n` +
           `${monthSaleData.saleAmount} so'm\n\n` +
           `🔵 KUN YAKUNI (FINAL HISOB)\n` +
           `📊 BUGUNGI KUN YAKUNI\n\n` +
-          `📦 Sotuvlar:` +
+          `📦 Sotuvlar: \n` +
           `${saleData.saleCount} ta → + ${saleData.saleAmount} so‘m\n\n` +
           `📞 Call time:\n` +
           `${formatTime(callTime ? callTime : 0)}\n` +
