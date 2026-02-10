@@ -94,6 +94,8 @@ export class StaffBotService implements OnModuleInit {
         );
         const callTimeData = await this.sipuniService.calculateCallDurations(startDate.toDate(), endDate.toDate());
         const callTime = callTimeData[crmProfile.sipNumber];
+        // const postSalary =
+        // const preSalary =
 
         const messageText =
           `<b><i>Bu natija — sizning mehnatingiz.\n` +

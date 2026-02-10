@@ -52,14 +52,14 @@ export class SipuniService implements OnModuleInit {
   }
 
   async getCallStats() {
-    const response = this.fetchData('statistic/export/all', {
+    const response = await this.fetchData('statistic/export/all', {
       limit: 200000,
       order: 'desc',
       page: 1,
       user: this.config.getOrThrow<string>('SIPUNI_API_USER'),
     });
 
-    return this.parseCallData(await response);
+    return this.parseCallData(response);
   }
 
   async calculateCallDurations(startDate: Date, endDate: Date) {
