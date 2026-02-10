@@ -126,6 +126,7 @@ export class UserService {
       where: {
         id: userId,
       },
+      select: ['password'],
     });
 
     if (!user) {
@@ -142,8 +143,11 @@ export class UserService {
       throw new BadRequestException('Parol tasdiqlanmagan');
     }
 
-    user.password = await hashPassword(data.password);
-    await this.userRepo.save(user);
+    const passwordHash = await hashPassword(data.password);
+
+    await this.userRepo.update(userId, {
+      password: passwordHash,
+    });
 
     return {
       message: 'Parol yangilandi',
