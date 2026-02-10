@@ -24,7 +24,6 @@ export class SynchronizeService {
 
   @Cron('0 20 11 * * *')
   sendDailyReportsCron() {
-    console.log('sending');
     this.staffBotService.sendDailyReports();
   }
 }

@@ -80,7 +80,7 @@ export class StaffBotService implements OnModuleInit {
       });
 
       for (const user of users) {
-        if (!user.telegramId) continue;
+        if (!user.telegramId || !user.crmProfile) continue;
 
         const crmProfile = user.crmProfile;
         const saleData = (await this.getManagerSaleResults(user.id, startDate.toDate(), endDate.toDate()))[0];
