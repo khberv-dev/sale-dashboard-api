@@ -10,6 +10,9 @@ export class CreateContractSignRequest {
   @IsString()
   phoneNumber: string;
 
+  @IsString()
+  address: string;
+
   @IsInt()
   session: number;
 

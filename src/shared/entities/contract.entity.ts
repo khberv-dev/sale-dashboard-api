@@ -14,6 +14,9 @@ export class Contract {
   @Column({ name: 'phone_number' })
   phoneNumber: string;
 
+  @Column({ nullable: true })
+  address: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

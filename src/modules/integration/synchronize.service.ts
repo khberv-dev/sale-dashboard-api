@@ -22,7 +22,7 @@ export class SynchronizeService {
     this.sipuniService.syncDailyCallDuration();
   }
 
-  @Cron('0 20 11 * * *')
+  @Cron('0 0 5 * * *')
   sendDailyReportsCron() {
     this.staffBotService.sendDailyReports();
   }

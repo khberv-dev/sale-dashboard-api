@@ -19,6 +19,7 @@ export class ContractService {
       firstName: data.firstName,
       lastName: data.lastName,
       phoneNumber: data.phoneNumber,
+      address: data.address,
     });
 
     return {
