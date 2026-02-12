@@ -12,8 +12,8 @@ import { EventGateway } from '@shared/modules/ws/event.gateway';
 import { UpdateSaleTypeRequest } from '@modules/sale/dto/update-sale-type-request.dto';
 import { BotService } from '@shared/modules/notify/bot.service';
 import { UserRole } from '@shared/enum/user-role.enum';
-import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
 import { SalaryService } from '@shared/modules/stats/salary.service';
+import { SalesService } from '@shared/modules/stats/sales.service';
 
 @Injectable()
 export class SaleService {
@@ -21,10 +21,10 @@ export class SaleService {
     @InjectRepository(Sale) private readonly saleRepo: Repository<Sale>,
     @InjectRepository(SaleType) private readonly saleTypeRepo: Repository<SaleType>,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
-    @InjectRepository(SalaryBonus) private readonly salaryBonusRepo: Repository<SalaryBonus>,
     private readonly eventGateway: EventGateway,
     private readonly botService: BotService,
     private readonly salaryService: SalaryService,
+    private readonly salesService: SalesService,
   ) {}
 
   private async getAdminPlan() {
@@ -205,6 +205,9 @@ export class SaleService {
     const dailyStats = await this.getDailyStat();
     const monthlyStats = await this.getMonthlyStat();
     const monthPlan = await this.getAdminPlan();
+    const totalSalesCount = await this.salesService.calculateSalesCount(filter.startDate, filter.endDate);
+    const totaLeadsCount = await this.salesService.getTotalLeadsCount();
+    const saleRate = totaLeadsCount > 0 ? (totalSalesCount / totaLeadsCount).toFixed(2) + '%' : '-';
 
     let dailyAmount = 0;
     let totalAmount = 0;
@@ -220,6 +223,7 @@ export class SaleService {
       total: totalResult,
       totalAmount,
       monthPlan,
+      saleRate,
     };
   }
 

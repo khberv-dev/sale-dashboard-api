@@ -14,7 +14,6 @@ export class ManagerService {
   getManagers() {
     return this.userRepo
       .createQueryBuilder('u')
-      .where(`u.role=:userRole`, { userRole: UserRole.MANAGER })
       .leftJoin(CrmProfile, 'cp', 'cp.user_id=u.id')
       .select([
         'u."id"',

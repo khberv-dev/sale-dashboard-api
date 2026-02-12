@@ -32,8 +32,6 @@ export class StaffBotService implements OnModuleInit {
     this.bot.command('start', this.handleStartCommand);
 
     this.bot.start({ drop_pending_updates: true });
-
-    this.sendDailyReports();
   }
 
   private handleStartCommand = async (context: CommandContext<Context>) => {
