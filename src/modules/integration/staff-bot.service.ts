@@ -82,8 +82,8 @@ export class StaffBotService implements OnModuleInit {
         const crmProfile = user.crmProfile;
         const sale = await this.salesService.calculateManagerSale(
           user.id,
-          monthStartDate.toDate(),
-          monthEndDate.toDate(),
+          startDate.toDate(),
+          endDate.toDate(),
         );
 
         // const leadCount = await this.amocrmService.getLeadsCount(
