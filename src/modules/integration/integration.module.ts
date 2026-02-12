@@ -8,9 +8,10 @@ import { StaffBotService } from '@modules/integration/staff-bot.service';
 import { User } from '@shared/entities/user.entity';
 import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
 import { NotifyModule } from '@shared/modules/notify/notify.module';
+import { StatsModule } from '@shared/modules/stats/stats.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, CrmProfile, SalaryBonus]), NotifyModule],
+  imports: [TypeOrmModule.forFeature([User, CrmProfile, SalaryBonus]), NotifyModule, StatsModule],
   providers: [SynchronizeService, AmocrmService, SipuniService, StaffBotService],
 })
 export class IntegrationModule {}

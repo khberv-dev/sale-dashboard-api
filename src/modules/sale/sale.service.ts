@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateSaleRequest } from '@modules/sale/dto/create-sale-request.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Sale } from '@shared/entities/sale.entity';
 import dayjs from 'dayjs';
 import { SaleType } from '@shared/entities/sale-type.entity';
@@ -13,6 +13,7 @@ import { UpdateSaleTypeRequest } from '@modules/sale/dto/update-sale-type-reques
 import { BotService } from '@shared/modules/notify/bot.service';
 import { UserRole } from '@shared/enum/user-role.enum';
 import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
+import { SalaryService } from '@shared/modules/stats/salary.service';
 
 @Injectable()
 export class SaleService {
@@ -23,6 +24,7 @@ export class SaleService {
     @InjectRepository(SalaryBonus) private readonly salaryBonusRepo: Repository<SalaryBonus>,
     private readonly eventGateway: EventGateway,
     private readonly botService: BotService,
+    private readonly salaryService: SalaryService,
   ) {}
 
   private async getAdminPlan() {
@@ -37,43 +39,6 @@ export class SaleService {
     }
 
     return admin.plan;
-  }
-
-  async calculateSalary(managerUserId: string, saleAmount: number) {
-    const startDate = dayjs().startOf('month');
-    const endDate = dayjs().endOf('month');
-    const fixedSalaryAmount = 1_000_000;
-    let saleBonus = 0;
-    let salaryBonus = 0;
-
-    switch (true) {
-      case saleAmount > 50_000_000:
-        saleBonus = saleAmount * 0.1;
-        break;
-      case saleAmount > 40_000_000:
-        saleBonus = saleAmount * 0.09;
-        break;
-      case saleAmount > 30_000_000:
-        saleBonus = saleAmount * 0.07;
-        break;
-      case saleAmount > 20_000_000:
-        saleBonus = saleAmount * 0.05;
-        break;
-      case saleAmount > 10_000_000:
-        saleBonus = saleAmount * 0.03;
-        break;
-    }
-
-    const salaryBonuses = await this.salaryBonusRepo.find({
-      where: {
-        user: { id: managerUserId },
-        date: Between(startDate.toDate(), endDate.toDate()),
-      },
-    });
-
-    salaryBonuses.forEach((bonus) => (salaryBonus += bonus.amount));
-
-    return Math.floor(fixedSalaryAmount + saleBonus + salaryBonus);
   }
 
   async createSale(managerUserId: string, data: CreateSaleRequest) {
@@ -178,7 +143,7 @@ export class SaleService {
 
     return Promise.all(
       result.map(async (manager) => {
-        const salary = await this.calculateSalary(manager.id, manager.sale);
+        const salary = await this.salaryService.calculateSalary(manager.id, startDate, endDate);
         return { ...manager, salary };
       }),
     );
