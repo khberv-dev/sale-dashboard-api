@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Bot } from 'grammy';
 import { ConfigService } from '@nestjs/config';
 import { formatNumber, formatTime } from '@/utils/formatter.util';
+import { MINIMUM_CALL_DURATION_HOURS } from '@shared/constants';
 
 @Injectable()
 export class BotService implements OnModuleInit {
@@ -68,7 +69,7 @@ export class BotService implements OnModuleInit {
     const messageText =
       `📞 <b>CALL TIME NATIJA</b>\n\n` +
       `⏱ Call time: ${formatTime(duration)}\n\n` +
-      `Siz 3 soatlik chegaradan o‘tdingiz.\n\n` +
+      `Siz ${MINIMUM_CALL_DURATION_HOURS} soatlik chegaradan o‘tdingiz.\n\n` +
       `💰 Bonus AKTIV:\n` +
       `+30 000 so'm\n\n` +
       `Bu intizom.\n` +
