@@ -5,22 +5,22 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '@shared/entities/user.entity';
 import { Repository } from 'typeorm';
 import dayjs from 'dayjs';
-import { AmocrmService } from '@modules/integration/amocrm.service';
 import { formatNumber, formatTime } from '@/utils/formatter.util';
 import { SipuniService } from '@modules/integration/sipuni.service';
 import { CALL_DURATION_REACH_BONUS_SUM, MINIMUM_CALL_DURATION_HOURS } from '@shared/constants';
 import { SalaryService } from '@shared/modules/stats/salary.service';
 import { SalesService } from '@shared/modules/stats/sales.service';
+import { CallsService } from '@shared/modules/stats/calls.service';
 
 @Injectable()
 export class StaffBotService implements OnModuleInit {
   constructor(
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     private readonly config: ConfigService,
-    private readonly amocrmService: AmocrmService,
     private readonly sipuniService: SipuniService,
     private readonly salaryService: SalaryService,
     private readonly salesService: SalesService,
+    private readonly callsService: CallsService,
   ) {}
 
   private bot: Bot;
@@ -78,19 +78,20 @@ export class StaffBotService implements OnModuleInit {
         if (!user.telegramId || !user.crmProfile) continue;
 
         const crmProfile = user.crmProfile;
-        const sale = await this.salesService.calculateManagerSale(
-          user.id,
-          startDate.toDate(),
-          endDate.toDate(),
-        );
+        const sale = await this.salesService.calculateManagerSale(user.id, startDate.toDate(), endDate.toDate());
 
         // const leadCount = await this.amocrmService.getLeadsCount(
         //   crmProfile.accountId,
         //   startDate.toDate(),
         //   endDate.toDate(),
         // );
+        const extraDuration = await this.callsService.calculateManagerCallDuration(
+          user.id,
+          startDate.toDate(),
+          endDate.toDate(),
+        );
         const callTimeData = await this.sipuniService.calculateCallDurations(startDate.toDate(), endDate.toDate());
-        const callTime = callTimeData.get(crmProfile.sipNumber) || 0;
+        const callTime = (callTimeData.get(crmProfile.sipNumber) || 0) + extraDuration;
         const preSalary = await this.salaryService.calculateSalary(
           user.id,
           monthStartDate.toDate(),

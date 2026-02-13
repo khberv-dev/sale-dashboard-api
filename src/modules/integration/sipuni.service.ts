@@ -13,6 +13,7 @@ import { SalaryBonusType } from '@shared/enum/salary-bonus-type.enum';
 import { BotService } from '@shared/modules/notify/bot.service';
 import { User } from '@shared/entities/user.entity';
 import { CALL_DURATION_REACH_BONUS_SUM, MINIMUM_CALL_DURATION_HOURS } from '@shared/constants';
+import { CallsService } from '@shared/modules/stats/calls.service';
 
 @Injectable()
 export class SipuniService implements OnModuleInit {
@@ -24,6 +25,7 @@ export class SipuniService implements OnModuleInit {
     @InjectRepository(SalaryBonus) private readonly salaryBonusRepo: Repository<SalaryBonus>,
     private readonly config: ConfigService,
     private readonly botService: BotService,
+    private readonly callsService: CallsService,
   ) {}
 
   onModuleInit() {
@@ -93,7 +95,12 @@ export class SipuniService implements OnModuleInit {
       const accounts = await this.crmProfileRepo.find();
 
       for (const account of accounts) {
-        const duration = callData.get(account.sipNumber);
+        const extraDuration = await this.callsService.calculateManagerCallDuration(
+          account.userId,
+          startDate.toDate(),
+          endDate.toDate(),
+        );
+        const duration = (callData.get(account.sipNumber) || 0) + extraDuration;
 
         if (!duration) {
           continue;

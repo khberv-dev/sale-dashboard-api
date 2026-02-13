@@ -6,10 +6,16 @@ import { UserRole } from '@shared/enum/user-role.enum';
 import { CreateManagerRequest } from '@modules/user/dto/create-manager-request.dto';
 import { hashPassword } from '@/utils/hash.util';
 import { CrmProfile } from '@shared/entities/crm-profiles.entity';
+import { AddCallRequest } from '@modules/user/dto/add-call-request.dto';
+import { Call } from '@shared/entities/call.entity';
 
 @Injectable()
 export class ManagerService {
-  constructor(@InjectRepository(User) private readonly userRepo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private readonly userRepo: Repository<User>,
+    @InjectRepository(CrmProfile) private readonly crmProfileRepo: Repository<CrmProfile>,
+    @InjectRepository(Call) private readonly callRepo: Repository<Call>,
+  ) {}
 
   getManagers() {
     return this.userRepo
@@ -56,6 +62,19 @@ export class ManagerService {
 
     return {
       message: 'Sotuv menejeri yaratildi',
+    };
+  }
+
+  async addCall(data: AddCallRequest) {
+    await this.callRepo.save({
+      user: {
+        id: data.userId,
+      },
+      duration: data.duration,
+    });
+
+    return {
+      message: "Yozuv qo'shildi",
     };
   }
 }

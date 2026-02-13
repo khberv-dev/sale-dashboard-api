@@ -6,6 +6,7 @@ import { DefaultAuthGuard } from '@common/guards/default-auth.guard';
 import { UpdateUserRequest } from '@modules/user/dto/update-user-request.dto';
 import { fileUploadInterceptor } from '@common/interceptors/file-upload.interceptor';
 import { UserService } from '@modules/user/user.service';
+import { AddCallRequest } from '@modules/user/dto/add-call-request.dto';
 
 @DefaultAuthGuard
 @IsAdmin()
@@ -35,5 +36,10 @@ export class ManagerController {
   @UseInterceptors(fileUploadInterceptor('avatar'))
   uploadManagerAvatar(@Param('managerId') managerId: string, @UploadedFile() file: Express.Multer.File) {
     return this.userService.updateUserAvatar(managerId, file.filename);
+  }
+
+  @Post('add-call')
+  addCall(@Body() body: AddCallRequest) {
+    return this.managerService.addCall(body);
   }
 }

@@ -12,6 +12,7 @@ import { Sale } from '@shared/entities/sale.entity';
 import { CrmProfile } from '@shared/entities/crm-profiles.entity';
 import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
 import { Attendance } from '@shared/entities/attendance.entity';
+import { Call } from '@shared/entities/call.entity';
 
 @Entity('users')
 export class User {
@@ -50,6 +51,9 @@ export class User {
 
   @OneToMany(() => Sale, (sale) => sale.manager)
   sales: Sale[];
+
+  @OneToMany(() => Call, (call) => call.user)
+  calls: Call[];
 
   @OneToMany(() => Attendance, (attendance) => attendance.user)
   attendances: Attendance[];
