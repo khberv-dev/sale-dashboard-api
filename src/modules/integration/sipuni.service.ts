@@ -100,6 +100,7 @@ export class SipuniService implements OnModuleInit {
           startDate.toDate(),
           endDate.toDate(),
         );
+        console.log('Extra duration: ' + extraDuration);
         const duration = (callData.get(account.sipNumber) || 0) + extraDuration;
 
         if (duration >= MINIMUM_CALL_DURATION_HOURS * 60 * 60) {
