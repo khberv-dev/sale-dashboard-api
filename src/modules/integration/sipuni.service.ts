@@ -101,8 +101,7 @@ export class SipuniService implements OnModuleInit {
           startDate.toDate(),
           endDate.toDate(),
         );
-        const duration = (callData.get(account.sipNumber) || 0) + extraDuration;
-        console.log(account.sipNumber, callData.get(account.sipNumber) || 0, duration, extraDuration);
+        const duration = Number(callData.get(account.sipNumber) || 0) + Number(extraDuration);
 
         if (duration >= MINIMUM_CALL_DURATION_HOURS * 60 * 60) {
           const user = await this.userRepo.findOneOrFail({
