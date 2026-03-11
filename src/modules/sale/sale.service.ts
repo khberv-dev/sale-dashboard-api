@@ -123,12 +123,13 @@ export class SaleService {
               cp.lead_count              AS "leadCount",
               cp.call_duration           AS "callDuration"
        FROM users m
-                LEFT JOIN sales s
-                          ON s.manager_id = m.id AND m.is_active = true
-                              AND s.sale_at BETWEEN $1 AND $2
-                LEFT JOIN "crm-profiles" cp
-                          ON cp.user_id = m.id
+              LEFT JOIN sales s
+                        ON s.manager_id = m.id
+                          AND s.sale_at BETWEEN $1 AND $2
+              LEFT JOIN "crm-profiles" cp
+                        ON cp.user_id = m.id
        WHERE m.role = 'MANAGER'
+         AND m.is_active = true
        GROUP BY m.id,
                 m.first_name,
                 m.last_name,
