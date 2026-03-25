@@ -12,7 +12,6 @@ import { UpdateSaleTypeRequest } from '@modules/sale/dto/update-sale-type-reques
 export class SaleController {
   constructor(private readonly saleService: SaleService) {}
 
-  @IsPublic()
   @Get('stats')
   getStats(@Query() filter: GetStatsFilter) {
     return this.saleService.getStats(filter);
