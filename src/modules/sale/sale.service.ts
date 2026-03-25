@@ -220,7 +220,9 @@ export class SaleService {
         relations: ['team'],
       });
 
-      teamId = user?.team.id ?? null;
+      if (user?.team) {
+        teamId = user?.team.id ?? null;
+      }
     }
 
     const now = dayjs();
