@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsDate } from 'class-validator';
+import { IsBoolean, IsDate, IsOptional } from 'class-validator';
 
 export class GetStatsFilter {
   @Type(() => Date)
@@ -9,4 +9,9 @@ export class GetStatsFilter {
   @Type(() => Date)
   @IsDate()
   endDate: Date;
+
+  @IsOptional()
+  @Type(() => Boolean)
+  @IsBoolean()
+  byTeam: boolean;
 }

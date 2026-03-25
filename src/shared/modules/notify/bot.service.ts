@@ -18,10 +18,6 @@ export class BotService implements OnModuleInit {
   onModuleInit() {
     this.bot = new Bot(this.configService.getOrThrow<string>('BOT_TOKEN'));
     this.staffBot = new Bot(this.configService.getOrThrow<string>('STAFF_BOT_TOKEN'));
-
-    this.bot.start({
-      drop_pending_updates: false,
-    });
   }
 
   notifySale(

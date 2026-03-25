@@ -8,6 +8,7 @@ import { hashPassword } from '@/utils/hash.util';
 import { CrmProfile } from '@shared/entities/crm-profiles.entity';
 import { AddCallRequest } from '@modules/user/dto/add-call-request.dto';
 import { Call } from '@shared/entities/call.entity';
+import { Team } from '@shared/entities/team.entity';
 
 @Injectable()
 export class ManagerService {
@@ -21,6 +22,7 @@ export class ManagerService {
     return this.userRepo
       .createQueryBuilder('u')
       .leftJoin(CrmProfile, 'cp', 'cp.user_id=u.id')
+      .leftJoin(Team, 't', 'u.team_id=t.id')
       .select([
         'u."id"',
         'u.first_name "firstName"',
@@ -29,6 +31,7 @@ export class ManagerService {
         'u."avatar"',
         'u."plan"',
         'u.is_active "isActive"',
+        't.name "team"',
         'cp.lead_count "leadCount"',
         'cp.account_id "accountId"',
         'cp.sip_number "sipNumber"',

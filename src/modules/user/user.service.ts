@@ -12,6 +12,7 @@ import dayjs from 'dayjs';
 import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
 import { SalaryBonusType } from '@shared/enum/salary-bonus-type.enum';
 import { ATTENDANCE_BONUS_SUM } from '@shared/constants';
+import { Team } from '@shared/entities/team.entity';
 
 @Injectable()
 export class UserService {
@@ -76,7 +77,7 @@ export class UserService {
       });
     }
 
-    let updateData: Partial<User> = {
+    const updateData: Partial<User> = {
       firstName: data.firstName,
       lastName: data.lastName,
       username: data.username,
@@ -85,12 +86,16 @@ export class UserService {
     };
 
     if (data.password) {
-      const passwordHash = await hashPassword(data.password);
-
-      updateData = { ...updateData, password: passwordHash };
+      updateData.password = await hashPassword(data.password);
     }
 
-    await this.userRepo.update(userId, updateData);
+    if (data.teamId) {
+      updateData.team = { id: data.teamId } as Team;
+    }
+
+    Object.assign(manager, updateData);
+
+    await this.userRepo.save(manager);
 
     return {
       message: 'Profil yangilandi',

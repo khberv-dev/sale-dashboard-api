@@ -2,6 +2,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -13,6 +15,7 @@ import { CrmProfile } from '@shared/entities/crm-profiles.entity';
 import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
 import { Attendance } from '@shared/entities/attendance.entity';
 import { Call } from '@shared/entities/call.entity';
+import { Team } from '@shared/entities/team.entity';
 
 @Entity('users')
 export class User {
@@ -63,6 +66,10 @@ export class User {
 
   @OneToOne(() => CrmProfile, (crmProfile) => crmProfile.user)
   crmProfile: CrmProfile;
+
+  @ManyToOne(() => Team, (team) => team.members)
+  @JoinColumn({ name: 'team_id' })
+  team: Team;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

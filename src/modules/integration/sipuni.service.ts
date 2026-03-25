@@ -91,7 +91,6 @@ export class SipuniService implements OnModuleInit {
     try {
       const startDate = dayjs().startOf('day');
       const endDate = startDate.endOf('day');
-      console.log(startDate.toDate(), endDate.toDate());
       const callData = await this.calculateCallDurations(startDate.toDate(), endDate.toDate());
       const accounts = await this.crmProfileRepo.find();
 

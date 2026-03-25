@@ -12,6 +12,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ContractModule } from '@modules/contract/contract.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { IntegrationModule } from '@modules/integration/integration.module';
+import { TeamModule } from '@modules/team/team.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { IntegrationModule } from '@modules/integration/integration.module';
     NotifyModule,
     ContractModule,
     IntegrationModule,
+    TeamModule,
   ],
   controllers: [AppController],
 })

@@ -56,7 +56,7 @@ export class SaleService {
       throw new BadRequestException();
     }
 
-    const oldStats = await this.getStats({ startDate, endDate });
+    const oldStats = await this.getStats({ startDate, endDate, byTeam: false }, null);
 
     const newSale = await this.saleRepo.save({
       manager: { id: managerUserId },
@@ -81,7 +81,7 @@ export class SaleService {
       .where('s.id=:saleId', { saleId: newSale.id })
       .getRawOne();
 
-    const stats = await this.getStats({ startDate, endDate });
+    const stats = await this.getStats({ startDate, endDate, byTeam: false }, null);
     const is100MPassed =
       Math.floor(stats.totalAmount / 100_000_000) - Math.floor(oldStats.totalAmount / 100_000_000) > 0;
 
@@ -111,7 +111,10 @@ export class SaleService {
     };
   }
 
-  private async getManagersResult(startDate: Date, endDate: Date): Promise<any[]> {
+  private async getManagersResult(startDate: Date, endDate: Date, teamId: string | null = null): Promise<any[]> {
+    const teamCondition = teamId ? `AND m.team_id = $3` : '';
+    const params = teamId ? [startDate, endDate, teamId] : [startDate, endDate];
+
     const result = await this.saleRepo.query(
       `SELECT m.id,
               m.first_name               AS "firstName",
@@ -130,16 +133,17 @@ export class SaleService {
                         ON cp.user_id = m.id
        WHERE m.role = 'MANAGER'
          AND m.is_active = true
+         ${teamCondition}
        GROUP BY m.id,
-                m.first_name,
-                m.last_name,
-                m.avatar,
-                m.plan,
-                cp.lead_count,
-                cp.call_duration
+         m.first_name,
+         m.last_name,
+         m.avatar,
+         m.plan,
+         cp.lead_count,
+         cp.call_duration
        ORDER BY "sale" DESC;
       `,
-      [startDate, endDate],
+      params,
     );
 
     return Promise.all(
@@ -150,61 +154,82 @@ export class SaleService {
     );
   }
 
-  private async getDailyStat() {
+  private async getDailyStat(teamId: string | null = null) {
     const startDate = dayjs().startOf('month').format('YYYY-MM-DD');
     const endDate = dayjs().endOf('month').format('YYYY-MM-DD HH:mm:ss');
 
+    const teamJoin = teamId ? `LEFT JOIN users u ON u.id = s.manager_id AND u.team_id = $3` : '';
+    const params = teamId ? [startDate, endDate, teamId] : [startDate, endDate];
+
     const data: any[] = await this.saleRepo.query(
       `WITH date_range AS (SELECT generate_series(
-                                    $1::date,
-                                    $2::date,
-                                    INTERVAL '1 day'
-                                  ) ::date AS day)
-      SELECT COALESCE(SUM(s.amount), 0) AS sale
-      FROM date_range d
-             LEFT JOIN sales s
-                       ON s.sale_at::date = d.day
-      GROUP BY d.day
-      ORDER BY d.day;`,
-      [startDate, endDate],
+                                  $1::date,
+                                  $2::date,
+                                  INTERVAL '1 day'
+                                ) ::date AS day)
+    SELECT COALESCE(SUM(s.amount), 0) AS sale
+    FROM date_range d
+           LEFT JOIN sales s
+                     ON s.sale_at::date = d.day
+           ${teamJoin}
+    GROUP BY d.day
+    ORDER BY d.day;`,
+      params,
     );
 
     return data.map((x) => Number(x.sale));
   }
 
-  private async getMonthlyStat() {
+  private async getMonthlyStat(teamId: string | null = null) {
     const startDate = dayjs().subtract(6, 'month').format('YYYY-MM-DD');
     const endDate = dayjs().format('YYYY-MM-DD');
 
+    const teamJoin = teamId ? `LEFT JOIN users u ON u.id = s.manager_id AND u.team_id = $3` : '';
+    const params = teamId ? [startDate, endDate, teamId] : [startDate, endDate];
+
     const data: any[] = await this.saleRepo.query(
       `WITH month_range AS (SELECT generate_series(
-                                     date_trunc('month', $1::date),
-                                     date_trunc('month', $2::date),
-                                     INTERVAL '1 month'
-                                   ) ::date AS month
-         )
-      SELECT m.month,
-             COALESCE(SUM(s.amount), 0) AS sale
-      FROM month_range m
-             LEFT JOIN sales s
-                       ON s.sale_at >= m.month
-                         AND s.sale_at < m.month + INTERVAL '1 month'
-      GROUP BY m.month
-      ORDER BY m.month;`,
-      [startDate, endDate],
+                                   date_trunc('month', $1::date),
+                                   date_trunc('month', $2::date),
+                                   INTERVAL '1 month'
+                                 ) ::date AS month
+       )
+    SELECT m.month,
+           COALESCE(SUM(s.amount), 0) AS sale
+    FROM month_range m
+           LEFT JOIN sales s
+                     ON s.sale_at >= m.month
+                       AND s.sale_at < m.month + INTERVAL '1 month'
+           ${teamJoin}
+    GROUP BY m.month
+    ORDER BY m.month;`,
+      params,
     );
 
     return data.map((x) => Number(x.sale));
   }
 
-  async getStats(filter: GetStatsFilter) {
+  async getStats(filter: GetStatsFilter, userId: string | null) {
+    let teamId: string | null = null;
+
+    if (filter.byTeam && userId) {
+      const user = await this.userRepo.findOne({
+        where: {
+          id: userId,
+        },
+        relations: ['team'],
+      });
+
+      teamId = user?.team.id ?? null;
+    }
+
     const now = dayjs();
     const startOfDay = now.startOf('day').toDate();
     const endOfDay = now.endOf('day').toDate();
-    const dailyResult: any[] = await this.getManagersResult(startOfDay, endOfDay);
-    const totalResult: any[] = await this.getManagersResult(filter.startDate, filter.endDate);
-    const dailyStats = await this.getDailyStat();
-    const monthlyStats = await this.getMonthlyStat();
+    const dailyResult: any[] = await this.getManagersResult(startOfDay, endOfDay, teamId);
+    const totalResult: any[] = await this.getManagersResult(filter.startDate, filter.endDate, teamId);
+    const dailyStats = await this.getDailyStat(teamId);
+    const monthlyStats = await this.getMonthlyStat(teamId);
     const monthPlan = await this.getAdminPlan();
     const totalSalesCount = await this.salesService.calculateSalesCount(filter.startDate, filter.endDate);
     const totaLeadsCount = await this.salesService.getTotalLeadsCount();

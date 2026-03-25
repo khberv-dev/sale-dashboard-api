@@ -1,4 +1,4 @@
-import { IsBoolean, IsInt, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
 
 export class UpdateUserRequest {
   @IsString()
@@ -29,4 +29,8 @@ export class UpdateUserRequest {
   @IsOptional()
   @IsBoolean()
   isActive: boolean;
+
+  @IsOptional()
+  @IsUUID()
+  teamId: string;
 }

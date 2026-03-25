@@ -13,8 +13,8 @@ export class SaleController {
   constructor(private readonly saleService: SaleService) {}
 
   @Get('stats')
-  getStats(@Query() filter: GetStatsFilter) {
-    return this.saleService.getStats(filter);
+  getStats(@Req() req: any, @Query() filter: GetStatsFilter) {
+    return this.saleService.getStats(filter, req.user.id);
   }
 
   @Post('create')
