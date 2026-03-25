@@ -31,6 +31,7 @@ export class ManagerService {
         'u."avatar"',
         'u."plan"',
         'u.is_active "isActive"',
+        't.id "teamId"',
         't.name "team"',
         'cp.lead_count "leadCount"',
         'cp.account_id "accountId"',

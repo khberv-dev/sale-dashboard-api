@@ -89,9 +89,7 @@ export class UserService {
       updateData.password = await hashPassword(data.password);
     }
 
-    if (data.teamId) {
-      updateData.team = { id: data.teamId } as Team;
-    }
+    updateData.team = { id: data.teamId } as Team;
 
     Object.assign(manager, updateData);
 
