@@ -1,4 +1,4 @@
-import { IsInt, IsString } from 'class-validator';
+import { IsInt, IsOptional, IsString } from 'class-validator';
 
 export class CreateContractSignRequest {
   @IsString()
@@ -10,6 +10,7 @@ export class CreateContractSignRequest {
   @IsString()
   phoneNumber: string;
 
+  @IsOptional()
   @IsString()
   address: string;
 
