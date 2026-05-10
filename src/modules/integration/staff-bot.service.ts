@@ -120,7 +120,7 @@ export class StaffBotService implements OnModuleInit {
         });
       } catch (e) {
         this.logger.error(
-          `Unable to send daily data to ${user.telegramId}(${user.firstName} ${user.lastName}). Error: ${e}`,
+          `Unable to send daily data to ${user.telegramId}(${user.firstName} ${user.lastName}). Error: ${e.message}`,
         );
       }
     }

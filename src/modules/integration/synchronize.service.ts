@@ -22,7 +22,7 @@ export class SynchronizeService {
     await this.sipuniService.syncDailyCallDuration();
   }
 
-  @Cron('0 0 15 30 * *')
+  @Cron(CronExpression.EVERY_DAY_AT_9AM)
   async sendDailyReportsCron() {
     await this.staffBotService.sendDailyReports();
   }
