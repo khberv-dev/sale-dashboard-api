@@ -13,17 +13,17 @@ export class SynchronizeService {
   ) {}
 
   @Cron(CronExpression.EVERY_5_MINUTES)
-  syncLeadCountCron() {
-    this.amoCrmService.syncLeadCount();
+  async syncLeadCountCron() {
+    await this.amoCrmService.syncLeadCount();
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
-  syncDailyCallDurationCron() {
-    this.sipuniService.syncDailyCallDuration();
+  async syncDailyCallDurationCron() {
+    await this.sipuniService.syncDailyCallDuration();
   }
 
   @Cron('0 0 5 * * *')
-  sendDailyReportsCron() {
-    this.staffBotService.sendDailyReports();
+  async sendDailyReportsCron() {
+    await this.staffBotService.sendDailyReports();
   }
 }
