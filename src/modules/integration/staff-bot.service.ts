@@ -65,66 +65,64 @@ export class StaffBotService implements OnModuleInit {
   };
 
   async sendDailyReports() {
-    try {
-      const startDate = dayjs().subtract(1, 'day').startOf('day');
-      const endDate = startDate.add(1, 'day');
-      const monthStartDate = startDate.startOf('month');
-      const monthEndDate = startDate.endOf('month');
-      const users = await this.userRepo.find({
-        relations: ['crmProfile'],
-      });
+    const startDate = dayjs().subtract(1, 'day').startOf('day');
+    const endDate = startDate.add(1, 'day');
+    const monthStartDate = startDate.startOf('month');
+    const monthEndDate = startDate.endOf('month');
+    const users = await this.userRepo.find({
+      relations: ['crmProfile'],
+    });
 
-      for (const user of users) {
-        if (!user.telegramId || !user.crmProfile) continue;
+    for (const user of users) {
+      if (!user.telegramId || !user.crmProfile) continue;
 
-        const crmProfile = user.crmProfile;
-        const sale = await this.salesService.calculateManagerSale(user.id, startDate.toDate(), endDate.toDate());
+      const crmProfile = user.crmProfile;
+      const sale = await this.salesService.calculateManagerSale(user.id, startDate.toDate(), endDate.toDate());
 
-        // const leadCount = await this.amocrmService.getLeadsCount(
-        //   crmProfile.accountId,
-        //   startDate.toDate(),
-        //   endDate.toDate(),
-        // );
-        const extraDuration = await this.callsService.calculateManagerCallDuration(
-          user.id,
-          startDate.toDate(),
-          endDate.toDate(),
-        );
-        const callTimeData = await this.sipuniService.calculateCallDurations(startDate.toDate(), endDate.toDate());
-        const callTime = (callTimeData.get(crmProfile.sipNumber) || 0) + extraDuration;
-        const preSalary = await this.salaryService.calculateSalary(
-          user.id,
-          monthStartDate.toDate(),
-          startDate.toDate(),
-        );
-        const postSalary = await this.salaryService.calculateSalary(
-          user.id,
-          monthStartDate.toDate(),
-          monthEndDate.toDate(),
-        );
+      // const leadCount = await this.amocrmService.getLeadsCount(
+      //   crmProfile.accountId,
+      //   startDate.toDate(),
+      //   endDate.toDate(),
+      // );
+      const extraDuration = await this.callsService.calculateManagerCallDuration(
+        user.id,
+        startDate.toDate(),
+        endDate.toDate(),
+      );
+      const callTimeData = await this.sipuniService.calculateCallDurations(startDate.toDate(), endDate.toDate());
+      const callTime = (callTimeData.get(crmProfile.sipNumber) || 0) + extraDuration;
+      const preSalary = await this.salaryService.calculateSalary(user.id, monthStartDate.toDate(), startDate.toDate());
+      const postSalary = await this.salaryService.calculateSalary(
+        user.id,
+        monthStartDate.toDate(),
+        monthEndDate.toDate(),
+      );
 
-        const messageText =
-          `<b><i>Bu natija — sizning mehnatingiz.\n` +
-          `Bu mehnat pulga aylanyapti.</i></b>\n\n` +
-          `💰 + ${formatNumber(postSalary - preSalary)} so'm so‘m\n\n` +
-          `📈 <b>Oylik sotuv daromadi:</b>\n` +
-          `${formatNumber(postSalary)} so'm\n\n` +
-          `🔵 KUN YAKUNI (FINAL HISOB)\n` +
-          `📊 BUGUNGI KUN YAKUNI\n\n` +
-          `📦 Sotuvlar: \n` +
-          `${sale.count} ta → + ${formatNumber(sale.amount)} so‘m\n\n` +
-          `📞 Call time:\n` +
-          `${formatTime(callTime ? callTime : 0)}\n` +
-          `Bonus: ${formatNumber(callTime >= MINIMUM_CALL_DURATION_HOURS ? CALL_DURATION_REACH_BONUS_SUM : 0)} so'm\n\n` +
-          `Bugun ishlaganingiz —\n` +
-          `ertangi daromadingiz.`;
+      const messageText =
+        `<b><i>Bu natija — sizning mehnatingiz.\n` +
+        `Bu mehnat pulga aylanyapti.</i></b>\n\n` +
+        `💰 + ${formatNumber(postSalary - preSalary)} so'm so‘m\n\n` +
+        `📈 <b>Oylik sotuv daromadi:</b>\n` +
+        `${formatNumber(postSalary)} so'm\n\n` +
+        `🔵 KUN YAKUNI (FINAL HISOB)\n` +
+        `📊 BUGUNGI KUN YAKUNI\n\n` +
+        `📦 Sotuvlar: \n` +
+        `${sale.count} ta → + ${formatNumber(sale.amount)} so‘m\n\n` +
+        `📞 Call time:\n` +
+        `${formatTime(callTime ? callTime : 0)}\n` +
+        `Bonus: ${formatNumber(callTime >= MINIMUM_CALL_DURATION_HOURS ? CALL_DURATION_REACH_BONUS_SUM : 0)} so'm\n\n` +
+        `Bugun ishlaganingiz —\n` +
+        `ertangi daromadingiz.`;
 
+      try {
         await this.bot.api.sendMessage(user.telegramId, messageText, {
           parse_mode: 'HTML',
         });
+      } catch (e) {
+        this.logger.error(
+          `Unable to send daily data to ${user.telegramId}(${user.firstName} ${user.lastName}). Error: ${e}`,
+        );
       }
-    } catch (e) {
-      this.logger.error(e);
     }
   }
 }
