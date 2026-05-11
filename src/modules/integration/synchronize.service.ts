@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { AmocrmService } from '@modules/integration/amocrm.service';
 import { SipuniService } from '@modules/integration/sipuni.service';
 import { StaffBotService } from '@modules/integration/staff-bot.service';
@@ -12,17 +12,17 @@ export class SynchronizeService {
     private readonly staffBotService: StaffBotService,
   ) {}
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(process.env.CRON_LEAD_COUNT_SYNC as string)
   syncLeadCountCron() {
     this.amoCrmService.syncLeadCount();
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(process.env.CRON_LEAD_COUNT_SYNC as string)
   syncDailyCallDurationCron() {
     this.sipuniService.syncDailyCallDuration();
   }
 
-  @Cron('30 09 * * *')
+  @Cron(process.env.CRON_LEAD_COUNT_SYNC as string)
   sendDailyReportsCron() {
     this.staffBotService.sendDailyReports();
   }
