@@ -81,7 +81,7 @@ export class AmocrmService implements OnModuleInit {
         });
       }
     } catch (e) {
-      console.log('Error counting leads:', e.message);
+      console.error('Error counting leads:', e.message);
     }
   }
 }

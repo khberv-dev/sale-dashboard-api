@@ -115,9 +115,11 @@ export class StaffBotService implements OnModuleInit {
         `ertangi daromadingiz.`;
 
       try {
-        await this.bot.api.sendMessage(user.telegramId, messageText, {
-          parse_mode: 'HTML',
-        });
+        if (user.telegramId) {
+          await this.bot.api.sendMessage(user.telegramId, messageText, {
+            parse_mode: 'HTML',
+          });
+        }
       } catch (e) {
         this.logger.error(
           `Unable to send daily data to ${user.telegramId}(${user.firstName} ${user.lastName}). Error: ${e.message}`,
