@@ -17,12 +17,12 @@ export class SynchronizeService {
     this.amoCrmService.syncLeadCount();
   }
 
-  @Cron(process.env.CRON_LEAD_COUNT_SYNC as string)
+  @Cron(process.env.CRON_CALL_DURATION_SYNC as string)
   syncDailyCallDurationCron() {
     this.sipuniService.syncDailyCallDuration();
   }
 
-  @Cron(process.env.CRON_LEAD_COUNT_SYNC as string)
+  @Cron(process.env.CRON_DAILY_REPORT as string)
   sendDailyReportsCron() {
     this.staffBotService.sendDailyReports();
   }
