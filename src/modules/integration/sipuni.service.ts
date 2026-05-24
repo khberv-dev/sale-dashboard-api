@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
 import { hashMD5Object } from '@/utils/hash.util';
@@ -17,7 +17,8 @@ import { CallsService } from '@shared/modules/stats/calls.service';
 
 @Injectable()
 export class SipuniService implements OnModuleInit {
-  apiClient: AxiosInstance;
+  private logger = new Logger('SIPUni');
+  private apiClient: AxiosInstance;
 
   constructor(
     @InjectRepository(User) private readonly userRepo: Repository<User>,
@@ -140,7 +141,7 @@ export class SipuniService implements OnModuleInit {
         }
       }
     } catch (e) {
-      console.log('Error calculating call durations:', e);
+      this.logger.error('Error calculating call durations: ' + e.message);
     }
   }
 }
