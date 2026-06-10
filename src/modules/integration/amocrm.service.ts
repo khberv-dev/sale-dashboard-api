@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import { AmoCrmUsersResponse } from '@shared/dto/amo-crm-users-response.dto';
 import { AmoCrmLeadsResponse } from '@shared/dto/amo-crm-leads-response.dto';
 import dayjs from 'dayjs';
@@ -18,8 +19,10 @@ export class AmocrmService implements OnModuleInit {
   apiClient: AxiosInstance;
 
   onModuleInit() {
+    const proxyUrl = this.config.get<string>('PROXY_URL');
     this.apiClient = axios.create({
       baseURL: this.config.getOrThrow<string>('AMOCRM_API_URL'),
+      ...(proxyUrl && { httpsAgent: new HttpsProxyAgent(proxyUrl) }),
     });
 
     this.apiClient.interceptors.request.use((config) => {

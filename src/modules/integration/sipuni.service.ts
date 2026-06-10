@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import { hashMD5Object } from '@/utils/hash.util';
 import { objectToQuery } from '@/utils/lib.util';
 import { SipuniCallItem } from '@shared/dto/sipuni-call-item.dto';
@@ -30,8 +31,10 @@ export class SipuniService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
+    const proxyUrl = this.config.get<string>('PROXY_URL');
     this.apiClient = axios.create({
       baseURL: process.env.SIPUNI_API_URL,
+      ...(proxyUrl && { httpsAgent: new HttpsProxyAgent(proxyUrl) }),
     });
   }
 

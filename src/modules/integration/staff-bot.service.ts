@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Bot, CommandContext, Context } from 'grammy';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '@shared/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -27,7 +28,11 @@ export class StaffBotService implements OnModuleInit {
   private logger = new Logger('Staff-bot service');
 
   onModuleInit() {
-    this.bot = new Bot(this.config.getOrThrow<string>('STAFF_BOT_TOKEN'));
+    const proxyUrl = this.config.get<string>('PROXY_URL');
+    const clientConfig = proxyUrl
+      ? { baseFetchConfig: { agent: new HttpsProxyAgent(proxyUrl) } }
+      : undefined;
+    this.bot = new Bot(this.config.getOrThrow<string>('STAFF_BOT_TOKEN'), { client: clientConfig });
 
     this.bot.command('start', this.handleStartCommand);
 

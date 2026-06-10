@@ -1,5 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Bot } from 'grammy';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import { ConfigService } from '@nestjs/config';
 import { formatNumber, formatTime } from '@/utils/formatter.util';
 import { MINIMUM_CALL_DURATION_HOURS } from '@shared/constants';
@@ -16,8 +17,12 @@ export class BotService implements OnModuleInit {
   staffBot: Bot;
 
   onModuleInit() {
-    this.bot = new Bot(this.configService.getOrThrow<string>('BOT_TOKEN'));
-    this.staffBot = new Bot(this.configService.getOrThrow<string>('STAFF_BOT_TOKEN'));
+    const proxyUrl = this.configService.get<string>('PROXY_URL');
+    const clientConfig = proxyUrl
+      ? { baseFetchConfig: { agent: new HttpsProxyAgent(proxyUrl) } }
+      : undefined;
+    this.bot = new Bot(this.configService.getOrThrow<string>('BOT_TOKEN'), { client: clientConfig });
+    this.staffBot = new Bot(this.configService.getOrThrow<string>('STAFF_BOT_TOKEN'), { client: clientConfig });
   }
 
   notifySale(
