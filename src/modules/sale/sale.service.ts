@@ -132,7 +132,6 @@ export class SaleService {
               LEFT JOIN "crm-profiles" cp
                         ON cp.user_id = m.id
        WHERE m.role = 'MANAGER'
-         AND m.is_active = true
          ${teamCondition}
        GROUP BY m.id,
          m.first_name,
