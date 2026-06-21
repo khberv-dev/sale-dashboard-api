@@ -104,6 +104,7 @@ export class SaleService {
   async createSaleType(data: CreateSaleTypeRequest) {
     await this.saleTypeRepo.save({
       name: data.name,
+      isResale: data.isResale ?? false,
     });
 
     return {

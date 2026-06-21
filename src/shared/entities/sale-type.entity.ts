@@ -15,6 +15,9 @@ export class SaleType {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
+  @Column({ name: 'is_resale', default: false })
+  isResale: boolean;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

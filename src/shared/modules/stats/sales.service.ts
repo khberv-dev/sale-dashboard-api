@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Sale } from '@shared/entities/sale.entity';
-import { Between, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '@shared/entities/user.entity';
 import { UserRole } from '@shared/enum/user-role.enum';
@@ -25,11 +25,12 @@ export class SalesService {
   }
 
   calculateSalesCount(startDate: Date, endDate: Date) {
-    return this.saleRepo.count({
-      where: {
-        saleAt: Between(startDate, endDate),
-      },
-    });
+    return this.saleRepo
+      .createQueryBuilder('s')
+      .leftJoin('s.type', 'st')
+      .where('s.sale_at BETWEEN :startDate AND :endDate', { startDate, endDate })
+      .andWhere('(st.is_resale = false OR st.is_resale IS NULL)')
+      .getCount();
   }
 
   async getTotalLeadsCount() {

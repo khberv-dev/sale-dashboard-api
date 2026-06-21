@@ -8,4 +8,8 @@ export class UpdateSaleTypeRequest {
   @IsOptional()
   @IsBoolean()
   isActive: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isResale: boolean;
 }
