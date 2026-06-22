@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { AmoCrmUsersResponse } from '@shared/dto/amo-crm-users-response.dto';
-import { AmoCrmLeadsResponse } from '@shared/dto/amo-crm-leads-response.dto';
+import { AmoCrmLead, AmoCrmLeadsResponse } from '@shared/dto/amo-crm-leads-response.dto';
 import dayjs from 'dayjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CrmProfile } from '@shared/entities/crm-profiles.entity';
@@ -62,6 +62,11 @@ export class AmocrmService implements OnModuleInit {
         `filter[created_at][end]=${endDateTime}&` +
         (accountId ? `filter[responsible_user_id]=${accountId}` : ''),
     );
+  }
+
+  async getLead(id: string) {
+    const res = await this.apiClient.get(`leads/${id}`);
+    return res.data as AmoCrmLead;
   }
 
   async syncLeadCount() {

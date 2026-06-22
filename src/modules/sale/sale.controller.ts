@@ -22,7 +22,8 @@ export class SaleController {
   @IsPublic()
   @Post('wh-create')
   whCreate(@Body() body: any) {
-    this.logger.log('wh-create', JSON.stringify(body));
+    this.logger.log(`wh-create ${JSON.stringify(body)}`);
+    this.saleService.whCreate(body);
     return { ok: true };
   }
 

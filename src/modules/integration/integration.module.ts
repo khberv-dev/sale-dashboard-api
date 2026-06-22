@@ -13,5 +13,6 @@ import { StatsModule } from '@shared/modules/stats/stats.module';
 @Module({
   imports: [TypeOrmModule.forFeature([User, CrmProfile, SalaryBonus]), NotifyModule, StatsModule],
   providers: [SynchronizeService, AmocrmService, SipuniService, StaffBotService],
+  exports: [AmocrmService],
 })
 export class IntegrationModule {}

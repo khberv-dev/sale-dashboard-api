@@ -3,6 +3,7 @@ import { AmoCrmBasicResponse } from '@shared/dto/amo-crm-basic-response';
 export interface AmoCrmLead {
   id: number;
   name: string;
+  price: number;
   responsible_user_id: number;
   created_at: number;
 }

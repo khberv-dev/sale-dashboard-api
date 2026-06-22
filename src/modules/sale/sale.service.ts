@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CreateSaleRequest } from '@modules/sale/dto/create-sale-request.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -14,18 +14,62 @@ import { BotService } from '@shared/modules/notify/bot.service';
 import { UserRole } from '@shared/enum/user-role.enum';
 import { SalaryService } from '@shared/modules/stats/salary.service';
 import { SalesService } from '@shared/modules/stats/sales.service';
+import { AmocrmService } from '@modules/integration/amocrm.service';
+import { CrmProfile } from '@shared/entities/crm-profiles.entity';
 
 @Injectable()
 export class SaleService {
+  private readonly logger = new Logger(SaleService.name);
+
   constructor(
     @InjectRepository(Sale) private readonly saleRepo: Repository<Sale>,
     @InjectRepository(SaleType) private readonly saleTypeRepo: Repository<SaleType>,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
+    @InjectRepository(CrmProfile) private readonly crmProfileRepo: Repository<CrmProfile>,
     private readonly eventGateway: EventGateway,
     private readonly botService: BotService,
     private readonly salaryService: SalaryService,
     private readonly salesService: SalesService,
+    private readonly amocrmService: AmocrmService,
   ) {}
+
+  async whCreate(body: any) {
+    const statuses: any[] = body?.leads?.status ?? [];
+
+    for (const status of statuses) {
+      const leadId: string = status?.id;
+      const statusId: string = status?.status_id;
+
+      this.logger.log(`wh-create lead=${leadId} status=${statusId}`);
+
+      if (statusId !== '142') continue;
+
+      try {
+        const lead = await this.amocrmService.getLead(leadId);
+        this.logger.log(`fetched lead=${lead.id} price=${lead.price} responsible=${lead.responsible_user_id}`);
+
+        const crmProfile = await this.crmProfileRepo.findOne({
+          where: { accountId: String(lead.responsible_user_id) },
+          relations: ['user'],
+        });
+
+        if (!crmProfile?.user) {
+          this.logger.warn(`no manager found for responsible_user_id=${lead.responsible_user_id}`);
+          continue;
+        }
+
+        await this.saleRepo.save({
+          manager: { id: crmProfile.user.id },
+          amount: lead.price ?? 0,
+          saleAt: dayjs.unix(lead.created_at).toDate(),
+        });
+
+        this.logger.log(`sale created for manager=${crmProfile.user.id} lead=${lead.id}`);
+      } catch (e) {
+        this.logger.error(`wh-create error for lead=${leadId}: ${e.message}`);
+      }
+    }
+  }
 
   private async getAdminPlan() {
     const admin = await this.userRepo.findOne({
