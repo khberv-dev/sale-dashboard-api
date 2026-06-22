@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Logger, Param, ParseIntPipe, Post, Put, Query, Req } from '@nestjs/common';
 import { SaleService } from '@modules/sale/sale.service';
 import { CreateSaleRequest } from '@modules/sale/dto/create-sale-request.dto';
 import { DefaultAuthGuard } from '@common/guards/default-auth.guard';
@@ -10,11 +10,20 @@ import { UpdateSaleTypeRequest } from '@modules/sale/dto/update-sale-type-reques
 @DefaultAuthGuard
 @Controller('sale')
 export class SaleController {
+  private readonly logger = new Logger(SaleController.name);
+
   constructor(private readonly saleService: SaleService) {}
 
   @Get('stats')
   getStats(@Req() req: any, @Query() filter: GetStatsFilter) {
     return this.saleService.getStats(filter, req.user.id);
+  }
+
+  @IsPublic()
+  @Post('wh-create')
+  whCreate(@Body() body: any) {
+    this.logger.log('wh-create', JSON.stringify(body));
+    return { ok: true };
   }
 
   @Post('create')
