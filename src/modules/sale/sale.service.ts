@@ -58,11 +58,12 @@ export class SaleService {
           continue;
         }
 
-        await this.saleRepo.save({
-          manager: { id: crmProfile.user.id },
-          amount: lead.price ?? 0,
-          saleAt: dayjs.unix(lead.created_at).toDate(),
-        });
+        await this.persistAndBroadcast(
+          crmProfile.user.id,
+          crmProfile.user.telegramId,
+          lead.price ?? 0,
+          dayjs.unix(lead.created_at).toDate(),
+        );
 
         this.logger.log(`sale created for manager=${crmProfile.user.id} lead=${lead.id}`);
       } catch (e) {
@@ -85,29 +86,25 @@ export class SaleService {
     return admin.plan;
   }
 
-  async createSale(managerUserId: string, data: CreateSaleRequest) {
+  private async persistAndBroadcast(
+    managerId: string,
+    telegramId: string | null,
+    amount: number,
+    saleAt: Date,
+    typeId?: string,
+    contractNumber?: string,
+  ) {
     const startDate = dayjs().startOf('month').toDate();
     const endDate = dayjs().endOf('month').toDate();
-    const saleDateTime = dayjs(data.date + ' ' + data.time, 'YYYY-MM-DD HH:mm');
-
-    const managerUser = await this.userRepo.findOne({
-      where: {
-        id: managerUserId,
-      },
-    });
-
-    if (!managerUser) {
-      throw new BadRequestException();
-    }
 
     const oldStats = await this.getStats({ startDate, endDate, byTeam: false }, null);
 
     const newSale = await this.saleRepo.save({
-      manager: { id: managerUserId },
-      amount: data.amount,
-      contractNumber: data.contractNumber,
-      type: { id: data.type },
-      saleAt: saleDateTime.toDate(),
+      manager: { id: managerId },
+      amount,
+      contractNumber,
+      ...(typeId && { type: { id: typeId } }),
+      saleAt,
     });
 
     const newSaleData: any = await this.saleRepo
@@ -137,8 +134,19 @@ export class SaleService {
       stats.dailyAmount,
       stats.totalAmount,
       newSaleData.type,
-      managerUser.telegramId,
+      telegramId,
     );
+  }
+
+  async createSale(managerUserId: string, data: CreateSaleRequest) {
+    const managerUser = await this.userRepo.findOne({ where: { id: managerUserId } });
+
+    if (!managerUser) {
+      throw new BadRequestException();
+    }
+
+    const saleAt = dayjs(data.date + ' ' + data.time, 'YYYY-MM-DD HH:mm').toDate();
+    await this.persistAndBroadcast(managerUserId, managerUser.telegramId, data.amount, saleAt, data.type, data.contractNumber);
 
     return {
       message: 'Sotuv tasdiqlandi',
