@@ -295,7 +295,7 @@ export class SaleService {
       dailyAmount,
       total: totalResult,
       totalAmount,
-      resaleAmount: totalSaleAmount,
+      totalSaleAmount,
       monthPlan,
       saleRate,
     };
