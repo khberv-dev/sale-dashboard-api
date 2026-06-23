@@ -280,6 +280,7 @@ export class SaleService {
     const totalSalesCount = await this.salesService.calculateSalesCount(filter.startDate, filter.endDate);
     const totaLeadsCount = await this.salesService.getTotalLeadsCount();
     const saleRate = totaLeadsCount > 0 ? ((totalSalesCount / totaLeadsCount) * 100).toFixed(2) + '%' : '-';
+    const totalSaleAmount = await this.salesService.calculateResaleSaleAmount(filter.startDate, filter.endDate);
 
     let dailyAmount = 0;
     let totalAmount = 0;
@@ -294,6 +295,7 @@ export class SaleService {
       dailyAmount,
       total: totalResult,
       totalAmount,
+      totalSaleAmount,
       monthPlan,
       saleRate,
     };

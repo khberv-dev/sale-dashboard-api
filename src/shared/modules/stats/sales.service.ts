@@ -24,6 +24,18 @@ export class SalesService {
     return { count: result['saleCount'], amount: result['saleAmount'] };
   }
 
+  async calculateResaleSaleAmount(startDate: Date, endDate: Date) {
+    const [result] = await this.saleRepo.query(
+      `SELECT COALESCE(SUM(s.amount), 0) AS total
+       FROM sales s
+       LEFT JOIN "sale-types" st ON st.id = s.type_id
+       WHERE s.sale_at BETWEEN $1 AND $2
+         AND st.is_resale = true`,
+      [startDate, endDate],
+    );
+    return Number(result.total);
+  }
+
   calculateSalesCount(startDate: Date, endDate: Date) {
     return this.saleRepo
       .createQueryBuilder('s')
