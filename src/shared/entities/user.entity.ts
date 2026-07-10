@@ -16,6 +16,9 @@ import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
 import { Attendance } from '@shared/entities/attendance.entity';
 import { Call } from '@shared/entities/call.entity';
 import { Team } from '@shared/entities/team.entity';
+import { PlanHistory } from '@shared/entities/plan-history.entity';
+import { PositionHistory } from '@shared/entities/position-history.entity';
+import { UserPosition } from '@shared/enum/user-position.enum';
 
 @Entity('users')
 export class User {
@@ -37,8 +40,8 @@ export class User {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
-  @Column({ type: 'bigint', default: 0 })
-  plan: number;
+  @Column({ type: 'enum', enum: UserPosition, default: UserPosition.JUNIOR })
+  position: UserPosition;
 
   @Column({ nullable: true })
   avatar: string;
@@ -63,6 +66,12 @@ export class User {
 
   @OneToMany(() => SalaryBonus, (salaryBonus) => salaryBonus.user)
   bonuses: SalaryBonus[];
+
+  @OneToMany(() => PlanHistory, (planHistory) => planHistory.user)
+  planHistory: PlanHistory[];
+
+  @OneToMany(() => PositionHistory, (positionHistory) => positionHistory.user)
+  positionHistory: PositionHistory[];
 
   @OneToOne(() => CrmProfile, (crmProfile) => crmProfile.user)
   crmProfile: CrmProfile;

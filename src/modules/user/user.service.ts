@@ -13,6 +13,8 @@ import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
 import { SalaryBonusType } from '@shared/enum/salary-bonus-type.enum';
 import { ATTENDANCE_BONUS_SUM } from '@shared/constants';
 import { Team } from '@shared/entities/team.entity';
+import { PlanHistory } from '@shared/entities/plan-history.entity';
+import { PositionHistory } from '@shared/entities/position-history.entity';
 
 @Injectable()
 export class UserService {
@@ -21,6 +23,8 @@ export class UserService {
     @InjectRepository(CrmProfile) private readonly crmProfileRepository: Repository<CrmProfile>,
     @InjectRepository(Attendance) private readonly attendanceRepository: Repository<Attendance>,
     @InjectRepository(SalaryBonus) private readonly salaryBonusRepository: Repository<SalaryBonus>,
+    @InjectRepository(PlanHistory) private readonly planHistoryRepository: Repository<PlanHistory>,
+    @InjectRepository(PositionHistory) private readonly positionHistoryRepository: Repository<PositionHistory>,
   ) {}
 
   async getUserInfo(userId: string) {
@@ -28,7 +32,7 @@ export class UserService {
       where: {
         id: userId,
       },
-      select: ['id', 'firstName', 'lastName', 'username', 'role', 'avatar', 'createdAt'],
+      select: ['id', 'firstName', 'lastName', 'username', 'role', 'position', 'avatar', 'createdAt'],
     });
 
     if (!user) {
@@ -77,16 +81,21 @@ export class UserService {
       });
     }
 
+    const positionChanged = data.position !== undefined && data.position !== manager.position;
+
     const updateData: Partial<User> = {
       firstName: data.firstName,
       lastName: data.lastName,
       username: data.username,
-      plan: data.plan,
       isActive: data.isActive,
     };
 
     if (data.password) {
       updateData.password = await hashPassword(data.password);
+    }
+
+    if (data.position !== undefined) {
+      updateData.position = data.position;
     }
 
     updateData.team = { id: data.teamId } as Team;
@@ -95,13 +104,28 @@ export class UserService {
 
     await this.userRepo.save(manager);
 
+    if (data.plan !== undefined) {
+      await this.planHistoryRepository.save({
+        user: { id: userId },
+        plan: data.plan,
+      });
+    }
+
+    if (positionChanged) {
+      await this.positionHistoryRepository.save({
+        user: { id: userId },
+        position: data.position,
+      });
+    }
+
     return {
       message: 'Profil yangilandi',
     };
   }
 
   async setMonthPlan(userId: string, plan: number) {
-    await this.userRepo.update(userId, {
+    await this.planHistoryRepository.save({
+      user: { id: userId },
       plan,
     });
 
@@ -111,17 +135,16 @@ export class UserService {
   }
 
   async getMonthPlan(userId: string) {
-    const user = await this.userRepo.findOne({
+    const lastPlan = await this.planHistoryRepository.findOne({
       where: {
-        id: userId,
+        user: { id: userId },
+      },
+      order: {
+        date: 'DESC',
       },
     });
 
-    if (!user) {
-      throw new BadRequestException();
-    }
-
-    return user.plan;
+    return lastPlan?.plan ?? 0;
   }
 
   async updatePassword(userId: string, data: UpdatePasswordRequest) {

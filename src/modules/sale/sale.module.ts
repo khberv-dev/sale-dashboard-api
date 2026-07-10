@@ -11,10 +11,11 @@ import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
 import { StatsModule } from '@shared/modules/stats/stats.module';
 import { IntegrationModule } from '@modules/integration/integration.module';
 import { CrmProfile } from '@shared/entities/crm-profiles.entity';
+import { PlanHistory } from '@shared/entities/plan-history.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Sale, SaleType, User, SalaryBonus, CrmProfile]),
+    TypeOrmModule.forFeature([Sale, SaleType, User, SalaryBonus, CrmProfile, PlanHistory]),
     WsModule,
     NotifyModule,
     StatsModule,

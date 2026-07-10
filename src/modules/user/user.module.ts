@@ -9,9 +9,13 @@ import { CrmProfile } from '@shared/entities/crm-profiles.entity';
 import { Attendance } from '@shared/entities/attendance.entity';
 import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
 import { Call } from '@shared/entities/call.entity';
+import { PlanHistory } from '@shared/entities/plan-history.entity';
+import { PositionHistory } from '@shared/entities/position-history.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, CrmProfile, Attendance, SalaryBonus, Call])],
+  imports: [
+    TypeOrmModule.forFeature([User, CrmProfile, Attendance, SalaryBonus, Call, PlanHistory, PositionHistory]),
+  ],
   controllers: [UserController, ManagerController],
   providers: [UserService, ManagerService],
 })

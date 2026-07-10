@@ -1,4 +1,5 @@
-import { IsBoolean, IsInt, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
+import { UserPosition } from '@shared/enum/user-position.enum';
 
 export class UpdateUserRequest {
   @IsString()
@@ -25,6 +26,10 @@ export class UpdateUserRequest {
   @IsOptional()
   @IsInt()
   plan: number;
+
+  @IsOptional()
+  @IsEnum(UserPosition)
+  position: UserPosition;
 
   @IsOptional()
   @IsBoolean()

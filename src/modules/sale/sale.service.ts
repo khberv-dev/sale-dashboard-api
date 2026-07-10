@@ -16,6 +16,7 @@ import { SalaryService } from '@shared/modules/stats/salary.service';
 import { SalesService } from '@shared/modules/stats/sales.service';
 import { AmocrmService } from '@modules/integration/amocrm.service';
 import { CrmProfile } from '@shared/entities/crm-profiles.entity';
+import { PlanHistory } from '@shared/entities/plan-history.entity';
 
 @Injectable()
 export class SaleService {
@@ -26,6 +27,7 @@ export class SaleService {
     @InjectRepository(SaleType) private readonly saleTypeRepo: Repository<SaleType>,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     @InjectRepository(CrmProfile) private readonly crmProfileRepo: Repository<CrmProfile>,
+    @InjectRepository(PlanHistory) private readonly planHistoryRepo: Repository<PlanHistory>,
     private readonly eventGateway: EventGateway,
     private readonly botService: BotService,
     private readonly salaryService: SalaryService,
@@ -83,7 +85,16 @@ export class SaleService {
       throw new BadRequestException('Admin not found');
     }
 
-    return admin.plan;
+    const lastPlan = await this.planHistoryRepo.findOne({
+      where: {
+        user: { id: admin.id },
+      },
+      order: {
+        date: 'DESC',
+      },
+    });
+
+    return lastPlan?.plan ?? 0;
   }
 
   private async persistAndBroadcast(
@@ -173,7 +184,7 @@ export class SaleService {
               m.first_name               AS "firstName",
               m.last_name                AS "lastName",
               m.avatar,
-              m.plan,
+              (SELECT ph.plan FROM "plan-histories" ph WHERE ph.user_id = m.id ORDER BY ph.date DESC LIMIT 1) AS plan,
               COALESCE(SUM(s.amount), 0) AS "sale",
               COUNT(s.id)                AS "saleCount",
               cp.lead_count              AS "leadCount",
@@ -190,7 +201,6 @@ export class SaleService {
          m.first_name,
          m.last_name,
          m.avatar,
-         m.plan,
          cp.lead_count,
          cp.call_duration
        ORDER BY "sale" DESC;

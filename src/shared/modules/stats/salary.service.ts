@@ -3,16 +3,23 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
 import { Between, Repository } from 'typeorm';
 import { SalesService } from '@shared/modules/stats/sales.service';
+import { User } from '@shared/entities/user.entity';
+import { PlanHistory } from '@shared/entities/plan-history.entity';
+import { FIXED_SALARY_BY_POSITION, PLAN_REACHED_BONUS_SUM } from '@shared/constants';
+import { UserPosition } from '@shared/enum/user-position.enum';
 
 @Injectable()
 export class SalaryService {
   constructor(
     @InjectRepository(SalaryBonus) private readonly salaryBonusRepo: Repository<SalaryBonus>,
+    @InjectRepository(User) private readonly userRepo: Repository<User>,
+    @InjectRepository(PlanHistory) private readonly planHistoryRepo: Repository<PlanHistory>,
     private readonly salesService: SalesService,
   ) {}
 
   async calculateSalary(managerUserId: string, startDate: Date, endDate: Date) {
-    const fixedSalaryAmount = 1_000_000;
+    const manager = await this.userRepo.findOne({ where: { id: managerUserId } });
+    const fixedSalaryAmount = FIXED_SALARY_BY_POSITION[manager?.position ?? UserPosition.JUNIOR];
     const { amount: saleAmount } = await this.salesService.calculateManagerSale(managerUserId, startDate, endDate);
     let saleBonus = 0;
     let salaryBonus = 0;
@@ -44,6 +51,13 @@ export class SalaryService {
 
     salaryBonuses.forEach((bonus) => (salaryBonus += bonus.amount));
 
-    return Math.floor(fixedSalaryAmount + saleBonus + salaryBonus);
+    const lastPlan = await this.planHistoryRepo.findOne({
+      where: { user: { id: managerUserId } },
+      order: { date: 'DESC' },
+    });
+
+    const planBonus = lastPlan && Number(saleAmount) >= Number(lastPlan.plan) ? PLAN_REACHED_BONUS_SUM : 0;
+
+    return Math.floor(fixedSalaryAmount + saleBonus + salaryBonus + planBonus);
   }
 }
