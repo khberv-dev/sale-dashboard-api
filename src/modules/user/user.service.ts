@@ -11,10 +11,11 @@ import { Attendance } from '@shared/entities/attendance.entity';
 import dayjs from 'dayjs';
 import { SalaryBonus } from '@shared/entities/salary-bonus.entity';
 import { SalaryBonusType } from '@shared/enum/salary-bonus-type.enum';
-import { ATTENDANCE_BONUS_SUM } from '@shared/constants';
+import { ATTENDANCE_BONUS_SUM, MINIMUM_MONTHLY_PLAN } from '@shared/constants';
 import { Team } from '@shared/entities/team.entity';
 import { PlanHistory } from '@shared/entities/plan-history.entity';
 import { PositionHistory } from '@shared/entities/position-history.entity';
+import { formatNumber } from '@/utils/formatter.util';
 
 @Injectable()
 export class UserService {
@@ -81,6 +82,10 @@ export class UserService {
       });
     }
 
+    if (data.plan !== undefined && data.plan < MINIMUM_MONTHLY_PLAN) {
+      throw new BadRequestException(`Oylik plan kamida ${formatNumber(MINIMUM_MONTHLY_PLAN)} bo'lishi kerak`);
+    }
+
     const positionChanged = data.position !== undefined && data.position !== manager.position;
 
     const updateData: Partial<User> = {
@@ -124,6 +129,10 @@ export class UserService {
   }
 
   async setMonthPlan(userId: string, plan: number) {
+    if (plan < MINIMUM_MONTHLY_PLAN) {
+      throw new BadRequestException(`Oylik plan kamida ${formatNumber(MINIMUM_MONTHLY_PLAN)} bo'lishi kerak`);
+    }
+
     await this.planHistoryRepository.save({
       user: { id: userId },
       plan,
