@@ -220,7 +220,9 @@ export class SaleService {
     const startDate = dayjs().startOf('month').format('YYYY-MM-DD');
     const endDate = dayjs().endOf('month').format('YYYY-MM-DD HH:mm:ss');
 
-    const teamJoin = teamId ? `LEFT JOIN users u ON u.id = s.manager_id AND u.team_id = $3` : '';
+    const teamCondition = teamId
+      ? `AND EXISTS (SELECT 1 FROM users u WHERE u.id = s.manager_id AND u.team_id = $3)`
+      : '';
     const params = teamId ? [startDate, endDate, teamId] : [startDate, endDate];
 
     const data: any[] = await this.saleRepo.query(
@@ -233,7 +235,7 @@ export class SaleService {
     FROM date_range d
            LEFT JOIN sales s
                      ON s.sale_at::date = d.day
-           ${teamJoin}
+                       ${teamCondition}
     GROUP BY d.day
     ORDER BY d.day;`,
       params,
@@ -246,7 +248,9 @@ export class SaleService {
     const startDate = dayjs().subtract(6, 'month').format('YYYY-MM-DD');
     const endDate = dayjs().format('YYYY-MM-DD');
 
-    const teamJoin = teamId ? `LEFT JOIN users u ON u.id = s.manager_id AND u.team_id = $3` : '';
+    const teamCondition = teamId
+      ? `AND EXISTS (SELECT 1 FROM users u WHERE u.id = s.manager_id AND u.team_id = $3)`
+      : '';
     const params = teamId ? [startDate, endDate, teamId] : [startDate, endDate];
 
     const data: any[] = await this.saleRepo.query(
@@ -262,7 +266,7 @@ export class SaleService {
            LEFT JOIN sales s
                      ON s.sale_at >= m.month
                        AND s.sale_at < m.month + INTERVAL '1 month'
-           ${teamJoin}
+                       ${teamCondition}
     GROUP BY m.month
     ORDER BY m.month;`,
       params,

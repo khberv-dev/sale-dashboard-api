@@ -23,7 +23,7 @@ npm run test:e2e        # e2e tests (./test/jest-e2e.json)
 npm run db:sync         # build then sync schema via TypeORM
 npm run db:seed         # build then run dist/seed.js
 npm run db:clear        # drop schema
-npm run db:reset        # drop schema then sync (db:clear + db:sync)
+npm run db:reset        # BROKEN: package.json calls "npm run db:clean" (no such script) — use db:clear then db:sync manually
 ```
 
 ## Architecture
@@ -43,17 +43,25 @@ NestJS 11 REST + WebSocket API backed by PostgreSQL (TypeORM). All routes are pr
 | `src/shared/modules/stats` | `SalesService`, `SalaryService`, `CallsService` — shared calculation logic reused across modules. |
 | `src/shared/modules/ws` | `EventGateway` (Socket.io) broadcasts `new-sale` events to all connected clients. |
 | `src/shared/modules/notify` | `BotService` — Telegram bot notifications for sale events. |
-| `src/shared/entities` | TypeORM entities: `User`, `Sale`, `SaleType`, `Team`, `CrmProfile`, `Call`, `Attendance`, `SalaryBonus`, `Contract`. |
+| `src/shared/entities` | TypeORM entities: `User`, `Sale`, `SaleType`, `Team`, `CrmProfile`, `Call`, `Attendance`, `SalaryBonus`, `Contract`, `PlanHistory`, `PositionHistory`. |
 
 ### Auth flow
 
 `DefaultAuthGuard` (`src/common/guards/default-auth.guard.ts`) is a decorator that composes `JwtAuthGuard` + `RolesGuard`. Apply it on controllers or individual routes. Use `@IsPublic()` to bypass auth, `@IsAdmin()` to restrict to the `ADMIN` role.
 
-JWT payload carries `{ sub: userId, role }`. The `plan` field on `User` stores the admin's monthly sales target (used as `monthPlan` in stats responses).
+JWT payload carries `{ sub: userId, role }`. The admin's monthly sales target (`monthPlan` in stats responses) is not a column on `User` — it's the latest `PlanHistory` row for the admin user (see "Plan and position history" below).
+
+### Sale creation paths
+
+`SaleService.persistAndBroadcast` (private, `src/modules/sale/sale.service.ts`) is the single path for recording a sale, shared by manual creation (`create`) and the AmoCRM webhook handler (`whCreate`, triggered when a lead's `status_id` is `'142'`). It saves the `Sale`, computes whether the month's cumulative total just crossed a 100,000,000 threshold (`is100MPassed`), broadcasts `new-sale` via `EventGateway`, and sends a Telegram notification via `BotService`.
 
 ### Salary calculation
 
-`SalaryService.calculateSalary` computes: fixed base (1,000,000) + tiered sale bonus (3–10% based on monthly sale amount thresholds defined inline) + `SalaryBonus` records (attendance bonuses, manual adjustments). Attendance bonus and call duration bonus constants live in `src/shared/constants.ts`. Salary is computed live per manager on every `getStats` call — no caching.
+`SalaryService.calculateSalary` computes: position-based fixed base (`FIXED_SALARY_BY_POSITION`, `src/shared/constants.ts`) + tiered sale bonus (3–10% based on monthly sale amount thresholds defined inline) + `SalaryBonus` records (attendance bonuses, manual adjustments) + a flat `PLAN_REACHED_BONUS_SUM` if the manager's sale amount meets/exceeds their most recent `PlanHistory` entry. Attendance bonus and call duration bonus constants also live in `src/shared/constants.ts`. Salary is computed live per manager on every `getStats` call — no caching.
+
+### Plan and position history
+
+`PlanHistory` and `PositionHistory` (`src/shared/entities`) are append-only logs of every change to a manager's monthly plan or position, each row timestamped via `date`. `User.position` still holds the current position directly, but there is no `User.plan` column — the current plan is always derived from the latest `PlanHistory` row (`ORDER BY date DESC`), which `UserService`, `ManagerService`, `SalaryService`, and `sale.service.ts` all read this way rather than storing it. `UserService.updateManager` and `UserService.setMonthPlan` insert a new `PlanHistory`/`PositionHistory` row on change instead of mutating in place. `MINIMUM_MONTHLY_PLAN` (`src/shared/constants.ts`) is enforced wherever a plan is set — requests below it throw `BadRequestException`.
 
 ### Cron jobs
 
