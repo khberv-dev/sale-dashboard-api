@@ -17,6 +17,7 @@ import { SalesService } from '@shared/modules/stats/sales.service';
 import { AmocrmService } from '@modules/integration/amocrm.service';
 import { CrmProfile } from '@shared/entities/crm-profiles.entity';
 import { PlanHistory } from '@shared/entities/plan-history.entity';
+import { Team } from '@shared/entities/team.entity';
 
 @Injectable()
 export class SaleService {
@@ -28,6 +29,7 @@ export class SaleService {
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     @InjectRepository(CrmProfile) private readonly crmProfileRepo: Repository<CrmProfile>,
     @InjectRepository(PlanHistory) private readonly planHistoryRepo: Repository<PlanHistory>,
+    @InjectRepository(Team) private readonly teamRepo: Repository<Team>,
     private readonly eventGateway: EventGateway,
     private readonly botService: BotService,
     private readonly salaryService: SalaryService,
@@ -298,7 +300,16 @@ export class SaleService {
     const totalResult: any[] = await this.getManagersResult(filter.startDate, filter.endDate, teamId);
     const dailyStats = await this.getDailyStat(teamId);
     const monthlyStats = await this.getMonthlyStat(teamId);
-    const monthPlan = await this.getAdminPlan();
+    let monthPlan = await this.getAdminPlan();
+
+    if (teamId) {
+      const teamsCount = await this.teamRepo.count();
+
+      if (teamsCount > 0) {
+        monthPlan = monthPlan / teamsCount;
+      }
+    }
+
     const totalSalesCount = await this.salesService.calculateSalesCount(filter.startDate, filter.endDate);
     const totaLeadsCount = await this.salesService.getTotalLeadsCount();
     const saleRate = totaLeadsCount > 0 ? ((totalSalesCount / totaLeadsCount) * 100).toFixed(2) + '%' : '-';
