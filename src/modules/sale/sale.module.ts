@@ -24,5 +24,6 @@ import { Team } from '@shared/entities/team.entity';
   ],
   controllers: [SaleController],
   providers: [SaleService],
+  exports: [SaleService],
 })
 export class SaleModule {}

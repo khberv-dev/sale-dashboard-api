@@ -151,15 +151,24 @@ export class SaleService {
     );
   }
 
-  async createSale(managerUserId: string, data: CreateSaleRequest) {
+  /**
+   * `persistAndBroadcast` ga yagona ommaviy kirish nuqtasi — qo'lda yaratish ham,
+   * boshqa modullardagi oqimlar (o'quv platformasiga yozilish) ham shu yerdan o'tadi,
+   * shunda sotuv WS va Telegram xabarlarini bir xil tarzda beradi.
+   */
+  async recordSale(managerUserId: string, amount: number, saleAt: Date, typeId?: string, contractNumber?: string) {
     const managerUser = await this.userRepo.findOne({ where: { id: managerUserId } });
 
     if (!managerUser) {
-      throw new BadRequestException();
+      throw new BadRequestException('Sotuv menejeri topilmadi');
     }
 
+    await this.persistAndBroadcast(managerUserId, managerUser.telegramId, amount, saleAt, typeId, contractNumber);
+  }
+
+  async createSale(managerUserId: string, data: CreateSaleRequest) {
     const saleAt = dayjs(data.date + ' ' + data.time, 'YYYY-MM-DD HH:mm').toDate();
-    await this.persistAndBroadcast(managerUserId, managerUser.telegramId, data.amount, saleAt, data.type, data.contractNumber);
+    await this.recordSale(managerUserId, data.amount, saleAt, data.type, data.contractNumber);
 
     return {
       message: 'Sotuv tasdiqlandi',

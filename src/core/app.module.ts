@@ -13,6 +13,7 @@ import { ContractModule } from '@modules/contract/contract.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { IntegrationModule } from '@modules/integration/integration.module';
 import { TeamModule } from '@modules/team/team.module';
+import { LearningModule } from '@modules/learning/learning.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { TeamModule } from '@modules/team/team.module';
     ContractModule,
     IntegrationModule,
     TeamModule,
+    LearningModule,
   ],
   controllers: [AppController],
 })
