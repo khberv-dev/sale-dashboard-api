@@ -8,7 +8,12 @@ import {
 import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance, isAxiosError } from 'axios';
 import { HttpsProxyAgent } from 'https-proxy-agent';
-import { LearningCourse, LearningEnrollment, LearningStudentPage } from '@shared/dto/learning-platform.dto';
+import {
+  LearningCourse,
+  LearningEnrollment,
+  LearningPendingEnrollment,
+  LearningStudentPage,
+} from '@shared/dto/learning-platform.dto';
 
 /**
  * Learning platform'ning tashqi API mijozi (`/api/external/*`).
@@ -73,6 +78,20 @@ export class LearningService {
     end?: string;
   }) {
     return this.request(() => this.apiClient().post<LearningEnrollment>('external/enrollments', body));
+  }
+
+  /**
+   * Yozilishni darhol ochmaydi — so'rovni navbatga qo'yadi. Tarif so'ralmaydi:
+   * narx va muddatni platforma admini tasdiqlash paytida tanlaydi.
+   *
+   * `userId` — talabaning `studentId` si emas, `external/students` dagi `userId`.
+   */
+  createPendingEnrollment(body: { userId: string; courseId: string; start?: string; end?: string }) {
+    return this.request(() => this.apiClient().post<LearningPendingEnrollment>('external/pending-enrollments', body));
+  }
+
+  getPendingEnrollment(id: string) {
+    return this.request(() => this.apiClient().get<LearningPendingEnrollment>(`external/pending-enrollments/${id}`));
   }
 
   /**

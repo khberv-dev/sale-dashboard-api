@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { LearningService } from '@modules/integration/learning.service';
 import { SaleService } from '@modules/sale/sale.service';
 import { CreateEnrollmentRequest } from '@modules/learning/dto/create-enrollment-request.dto';
+import { CreatePendingEnrollmentRequest } from '@modules/learning/dto/create-pending-enrollment-request.dto';
 
 @Injectable()
 export class EnrollmentService {
@@ -52,5 +53,25 @@ export class EnrollmentService {
       saleRecorded,
       enrollment,
     };
+  }
+
+  /**
+   * `enroll` dan farqi: yozilish ochilmaydi, so'rov platforma adminining tasdig'ini
+   * kutadi. Shuning uchun bu yerda sotuv **yozilmaydi** — summa hali ma'lum emas
+   * (tarifni admin tanlaydi) va so'rov rad etilishi mumkin. Rad etilgan so'rov
+   * uchun yozilgan sotuvni orqaga qaytarib bo'lmasdi.
+   */
+  async requestEnrollment(data: CreatePendingEnrollmentRequest) {
+    const pending = await this.learningService.createPendingEnrollment(data);
+
+    return {
+      message: "So'rov yuborildi — admin tasdig'i kutilmoqda",
+      pending,
+    };
+  }
+
+  /** So'rov holatini kuzatish — `accepted` bo'lganda `enrollment` to'ladi. */
+  getPendingEnrollment(id: string) {
+    return this.learningService.getPendingEnrollment(id);
   }
 }

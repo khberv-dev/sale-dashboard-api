@@ -40,3 +40,28 @@ export interface LearningEnrollment {
     title: string;
   };
 }
+
+/** `created` — admin tasdig'i kutilmoqda, `accepted` — yozilish ochilgan, `rejected` — rad etilgan. */
+export type LearningPendingStatus = 'created' | 'accepted' | 'rejected';
+
+/**
+ * Admin tasdig'ini kutayotgan yozilish so'rovi. Tarif (`plan`) bu yerda yo'q —
+ * narx va muddat tasdiqlash paytida ma'lum bo'ladi, shuning uchun uni admin tanlaydi.
+ */
+export interface LearningPendingEnrollment {
+  id: string;
+  status: LearningPendingStatus;
+  start: string | null;
+  end: string | null;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string | null;
+  };
+  course: {
+    id: string;
+    title: string;
+  };
+  /** Faqat `accepted` holatida to'ladi. */
+  enrollment: LearningEnrollment | null;
+}
